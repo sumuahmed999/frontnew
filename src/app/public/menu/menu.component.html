@@ -1,0 +1,359 @@
+<div class="menu-container">
+  <!-- Enhanced Header with Restaurant Info from API -->
+  <div class="header">
+    <button class="back-btn" (click)="goBack()">
+      <i class="bi bi-arrow-left"></i>
+    </button>
+    
+    <div class="restaurant-info">
+      <!-- Loading state for restaurant info -->
+      <div *ngIf="isLoading && !selectedRestaurant.tenantName" class="restaurant-loading">
+        <div class="loading-placeholder"></div>
+        <div class="loading-meta"></div>
+      </div>
+      
+      <!-- Restaurant info from API -->
+      <div *ngIf="selectedRestaurant.tenantName">
+        <h2>{{ selectedRestaurant.tenantName }}</h2>
+        <div class="restaurant-meta">
+          <span class="delivery-time">
+            <i class="bi bi-clock"></i>
+            {{ selectedRestaurant.deliveryTime || 20 }}min
+          </span>
+          <span class="rating" *ngIf="selectedRestaurant.rating">
+            <i class="bi bi-star-fill"></i>
+            {{ selectedRestaurant.rating }}
+          </span>
+          <span class="location" *ngIf="selectedRestaurant.city">
+            <i class="bi bi-geo-alt"></i>
+            {{ selectedRestaurant.city }}
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <button class="cart-btn" (click)="openCart()" [class.has-items]="cartItemsCount > 0">
+      <i class="bi bi-bag"></i>
+      <span class="cart-count" *ngIf="cartItemsCount > 0">{{ cartItemsCount }}</span>
+    </button>
+  </div>
+
+  <!-- Menu Loading State -->
+  <div class="menu-loading" *ngIf="isLoadingMenu">
+    <div class="loading-card">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+      </div>
+      <h4>Loading menu...</h4>
+      <p>Fetching delicious items from {{ selectedRestaurant.tenantName || 'restaurant' }}</p>
+    </div>
+  </div>
+
+  <!-- Menu Error State -->
+  <div class="menu-error" *ngIf="menuError && !isLoadingMenu">
+    <div class="error-card">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <h4>Unable to load menu</h4>
+      <p>{{ menuError }}</p>
+      <div class="error-actions">
+        <button class="btn-retry" (click)="retryLoadMenu()">
+          <i class="bi bi-arrow-clockwise"></i>
+          Try Again
+        </button>
+        <button class="btn-back" (click)="goBack()">
+          <i class="bi bi-arrow-left"></i>
+          Go Back
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu Content (rest of your existing template) -->
+  <div class="menu-content" *ngIf="!isLoadingMenu && !menuError">
+    <!-- Compact Search Bar -->
+    <div class="search-section">
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" 
+               placeholder="Search menu items..." 
+               [(ngModel)]="searchQuery"
+               (input)="filterMenu()">
+        <button class="clear-btn" *ngIf="searchQuery" (click)="clearSearch()">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Category Filters -->
+    <div class="category-filters" *ngIf="categories.length > 0">
+      <button class="category-chip" 
+              *ngFor="let category of categories"
+              [class.active]="selectedCategory === category"
+              (click)="selectCategory(category)">
+        {{ category }}
+      </button>
+    </div>
+
+    <!-- Results Info -->
+    <div class="results-info" *ngIf="filteredItems.length > 0">
+      <span class="item-count">{{ filteredItems.length }} items found</span>
+      <div class="view-toggle">
+        <button class="toggle-btn" 
+                [class.active]="viewMode === 'list'" 
+                (click)="setViewMode('list')">
+          <i class="bi bi-list"></i>
+        </button>
+        <button class="toggle-btn" 
+                [class.active]="viewMode === 'grid'" 
+                (click)="setViewMode('grid')">
+          <i class="bi bi-grid-3x3-gap"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- No Results -->
+    <div class="no-results" *ngIf="filteredItems.length === 0 && searchQuery">
+      <i class="bi bi-search"></i>
+      <h4>No items found</h4>
+      <p>Try searching for something else</p>
+      <button class="clear-search-btn" (click)="clearSearch()">Clear Search</button>
+    </div>
+
+    <!-- Menu Items (rest of your existing menu items template) -->
+    <div class="menu-items" [class.grid-view]="viewMode === 'grid'">
+      <div class="menu-item" 
+           *ngFor="let item of filteredItems; trackBy: trackByItemId"
+           (click)="viewItemDetails(item)">
+        
+        <!-- Mobile-Optimized Image -->
+        <div class="item-image">
+          <img [src]="getItemImage(item)" 
+               [alt]="item.itemName" 
+               (error)="onImageError($event)"
+               loading="lazy" />
+          <div class="image-overlay">
+            <div class="discount-badge" *ngIf="item.hasDiscount">
+              {{ item.discountPercentage }}% OFF
+            </div>
+            <div class="prep-time">
+              <i class="bi bi-clock"></i>
+              {{ item.preparationTime }}m
+            </div>
+          </div>
+        </div>
+        
+        <!-- Compact Item Content -->
+        <div class="item-content">
+          <div class="item-header">
+            <div class="item-title">
+              <h4>{{ item.itemName }}</h4>
+              <div class="item-badges">
+                <span class="badge veg" *ngIf="item.isVegetarian">
+                  <i class="bi bi-circle-fill"></i>
+                </span>
+                <span class="badge nonveg" *ngIf="!item.isVegetarian">
+                  <i class="bi bi-triangle-fill"></i>
+                </span>
+                <span class="badge spicy" *ngIf="item.isSpicy">
+                  <i class="bi bi-fire"></i>
+                </span>
+                <span class="badge promo" *ngIf="item.isPromotion">
+                  {{ item.promotionLabel }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="item-price">
+              <span class="current-price">₹{{ item.effectivePrice }}</span>
+              <span class="original-price" *ngIf="item.hasDiscount">₹{{ item.price }}</span>
+            </div>
+          </div>
+          
+          <p class="item-description">{{ truncateText(item.description, 80) }}</p>
+          
+          <div class="item-meta">
+            <span class="category">{{ item.subcategoryName }}</span>
+            <div class="item-actions">
+              <div class="quantity-controls" *ngIf="getItemQuantity(item.itemId) > 0">
+                <button class="qty-btn" (click)="decreaseQuantity(item, $event)">
+                  <i class="bi bi-dash"></i>
+                </button>
+                <span class="qty-display">{{ getItemQuantity(item.itemId) }}</span>
+                <button class="qty-btn" (click)="increaseQuantity(item, $event)">
+                  <i class="bi bi-plus"></i>
+                </button>
+              </div>
+              <button class="add-btn" 
+                      *ngIf="getItemQuantity(item.itemId) === 0" 
+                      (click)="addToCart(item, $event)">
+                <i class="bi bi-plus"></i>
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rest of your existing cart sidebar and summary -->
+  <!-- ... (keep your existing cart HTML) ... -->
+
+
+  <!-- Compact Cart Summary -->
+<!-- Updated Cart Summary with Loading State -->
+<div class="cart-summary" 
+     *ngIf="cartItemsCount > 0" 
+     [class.loading]="isUpdatingBooking"
+     (click)="!isUpdatingBooking && proceedToCheckout()">
+  <div class="cart-info">
+    <div class="cart-icon">
+      <i class="bi bi-bag-fill" *ngIf="!isUpdatingBooking"></i>
+      <div class="loading-spinner" *ngIf="isUpdatingBooking">
+        <div class="spinner"></div>
+      </div>
+      <span class="item-count" *ngIf="!isUpdatingBooking">{{ cartItemsCount }}</span>
+    </div>
+    <div class="cart-details">
+      <span class="items-text" *ngIf="!isUpdatingBooking">
+        {{ cartItemsCount }} item{{ cartItemsCount > 1 ? 's' : '' }}
+      </span>
+      <span class="items-text" *ngIf="isUpdatingBooking">
+        Updating order...
+      </span>
+      <span class="total-amount">₹{{ cartTotal }}</span>
+    </div>
+  </div>
+  <div class="checkout-btn" [class.loading]="isUpdatingBooking">
+    <span *ngIf="!isUpdatingBooking">Checkout</span>
+    <span *ngIf="isUpdatingBooking">Processing...</span>
+    <i class="bi bi-arrow-right" *ngIf="!isUpdatingBooking"></i>
+    <div class="mini-spinner" *ngIf="isUpdatingBooking"></div>
+  </div>
+</div>
+<!-- Cart Loading State -->
+<div class="cart-loading" *ngIf="isLoadingCart">
+  <div class="loading-card">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+    </div>
+    <h4>Loading your cart...</h4>
+    <p>Fetching your previously added items</p>
+  </div>
+</div>
+
+<!-- Rest of your existing template -->
+
+<!-- Updated Proceed to Pay Button -->
+<button class="proceed-checkout-btn" 
+        (click)="proceedToCheckout()" 
+        [disabled]="isUpdatingBooking || cartItemsCount === 0">
+  <div class="btn-content">
+    <i class="bi bi-credit-card" *ngIf="!isUpdatingBooking"></i>
+    <div class="loading-spinner" *ngIf="isUpdatingBooking">
+      <div class="spinner"></div>
+    </div>
+    <span *ngIf="!isUpdatingBooking">Proceed to Pay</span>
+    <span *ngIf="isUpdatingBooking">Updating Order...</span>
+  </div>
+</button>
+
+
+  <!-- Cart Overlay -->
+  <div class="cart-overlay" 
+       [class.active]="isCartOpen" 
+       (click)="closeCart()"></div>
+
+  <!-- Cart Sidebar -->
+  <div class="cart-sidebar" [class.open]="isCartOpen">
+    <div class="cart-header">
+      <h3>
+        <i class="bi bi-bag-fill"></i>
+        Your Order
+      </h3>
+      <button class="close-cart" (click)="closeCart()">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+
+    <div class="cart-content" *ngIf="cartItems.length > 0">
+      <!-- Restaurant Info -->
+      <div class="restaurant-badge" *ngIf="selectedRestaurant.name">
+        <i class="bi bi-shop"></i>
+        <span>{{ selectedRestaurant.name }}</span>
+      </div>
+
+      <div class="cart-items">
+        <div class="cart-item" *ngFor="let item of cartItems; trackBy: trackByItemId">
+          <div class="item-image">
+            <img [src]="item.image" [alt]="item.name" (error)="onImageError($event)" />
+          </div>
+          
+          <div class="item-details">
+            <h4>{{ item.name }}</h4>
+            <div class="item-price">₹{{ item.price }}</div>
+            <div class="item-total">Total: ₹{{ item.price * item.quantity }}</div>
+          </div>
+          
+          <div class="item-controls">
+            <div class="quantity-controls">
+              <button (click)="updateCartItemQuantity(item.id, -1)" class="qty-btn">
+                <i class="bi bi-dash"></i>
+              </button>
+              <span class="quantity">{{ item.quantity }}</span>
+              <button (click)="updateCartItemQuantity(item.id, 1)" class="qty-btn">
+                <i class="bi bi-plus"></i>
+              </button>
+            </div>
+            <button class="remove-item" (click)="removeFromCart(item.id)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cart Summary -->
+      <div class="cart-summary-detailed">
+        <div class="summary-row">
+          <span>Subtotal ({{ cartItemsCount }} items)</span>
+          <span>₹{{ cartTotal }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Packaging Fee</span>
+          <span>₹5</span>
+        </div>
+        <div class="summary-row">
+          <span>Platform Fee</span>
+          <span>₹3</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total Amount</span>
+          <span>₹{{ cartTotal + 8 }}</span>
+        </div>
+      </div>
+
+      <!-- Cart Actions -->
+      <div class="cart-actions">
+        <button class="clear-cart-btn" (click)="clearCart()">
+          <i class="bi bi-trash"></i>
+          Clear Cart
+        </button>
+        <button class="proceed-checkout-btn" (click)="proceedToCheckout()">
+          <i class="bi bi-credit-card"></i>
+          Proceed to Pay
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty Cart State -->
+    <div class="empty-cart" *ngIf="cartItems.length === 0">
+      <i class="bi bi-bag-x"></i>
+      <h4>Your cart is empty</h4>
+      <p>Browse our delicious menu and add items to get started!</p>
+      <button class="browse-menu-btn" (click)="closeCart()">
+        <i class="bi bi-arrow-left"></i>
+        Continue Shopping
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,264 @@
+<div class="menu-subcategory-container">
+  <!-- Success/Error Messages -->
+  <div *ngIf="successMessage" class="alert alert-success alert-compact mb-2">
+    <i class="bi bi-check-circle me-1"></i>
+    <span class="small">{{ successMessage }}</span>
+    <button type="button" class="btn-close btn-close-sm" (click)="clearMessages()"></button>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger alert-compact mb-2">
+    <i class="bi bi-exclamation-circle me-1"></i>
+    <span class="small">{{ errorMessage }}</span>
+    <button type="button" class="btn-close btn-close-sm" (click)="clearMessages()"></button>
+  </div>
+
+  <!-- Subcategory Form -->
+  <div class="subcategory-form card">
+    <div class="card-header py-2">
+      <h6 class="card-title mb-0 small">
+        <i class="bi bi-bookmark me-1"></i>
+        {{ editingSubcategoryId ? 'Edit Subcategory' : 'Add New Subcategory' }}
+      </h6>
+    </div>
+    <div class="card-body py-2">
+      <form [formGroup]="subcategoryForm" (ngSubmit)="onSubmit()">
+        <div class="form-grid mb-3">
+          <!-- Category Selection -->
+          <div class="form-group">
+            <label class="form-label text-xs">Category *</label>
+            <select formControlName="categoryId" 
+                    class="form-select form-select-sm text-xs" 
+                    [disabled]="isSubmitting || isLoadingCategories">
+              <option value="">Select Category</option>
+              <option *ngFor="let category of categories; trackBy: trackByCategoryId" 
+                      [value]="category.categoryId">
+                {{ category.categoryName }}
+              </option>
+            </select>
+            <div *ngIf="isLoadingCategories" class="text-muted text-xs mt-1">
+              <i class="spinner-border spinner-border-sm me-1"></i>Loading categories...
+            </div>
+            <div *ngIf="subcategoryForm.get('categoryId')?.invalid && subcategoryForm.get('categoryId')?.touched" 
+                 class="text-danger text-xs mt-1">
+              Category selection is required
+            </div>
+          </div>
+
+          <!-- Subcategory Name -->
+          <div class="form-group">
+            <label class="form-label text-xs">Subcategory Name *</label>
+            <input type="text" formControlName="subcategoryName" 
+                   class="form-control form-control-sm text-xs" 
+                   [disabled]="isSubmitting"
+                   placeholder="Enter subcategory name">
+            <div *ngIf="subcategoryForm.get('subcategoryName')?.invalid && subcategoryForm.get('subcategoryName')?.touched" 
+                 class="text-danger text-xs mt-1">
+              Subcategory name is required
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label class="form-label text-xs">Description</label>
+            <textarea formControlName="description" 
+                      class="form-control form-control-sm text-xs" 
+                      [disabled]="isSubmitting"
+                      placeholder="Subcategory description"
+                      rows="2"></textarea>
+          </div>
+
+          <!-- Display Order -->
+          <div class="form-group">
+            <label class="form-label text-xs">Display Order</label>
+            <input type="number" formControlName="displayOrder" 
+                   class="form-control form-control-sm text-xs" 
+                   [disabled]="isSubmitting"
+                   min="0">
+          </div>
+
+          <!-- Active Status -->
+          <div class="form-group">
+            <div class="form-check mt-3">
+              <input type="checkbox" formControlName="isActive" 
+                     class="form-check-input form-check-input-sm" 
+                     [disabled]="isSubmitting">
+              <label class="form-check-label text-xs">Active Subcategory</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions mt-3 pt-2 border-top">
+          <button type="submit" class="btn btn-primary btn-sm" 
+                  [disabled]="subcategoryForm.invalid || isSubmitting">
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-1"></span>
+            <span *ngIf="isSubmitting" class="text-xs">
+              {{ editingSubcategoryId ? 'Updating...' : 'Saving...' }}
+            </span>
+            <span *ngIf="!isSubmitting" class="text-xs">
+              <i class="bi bi-save me-1"></i>{{ editingSubcategoryId ? 'Update' : 'Save' }} Subcategory
+            </span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm ms-2" 
+                  (click)="resetForm()" [disabled]="isSubmitting">
+            <i class="bi bi-x-circle me-1"></i><span class="text-xs">Reset</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Subcategories List -->
+  <div class="subcategories-list card mt-3">
+    <div class="card-header py-2">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <h6 class="card-title mb-0 small">
+          <i class="bi bi-list me-1"></i>
+          Subcategories <span class="badge badge-sm bg-primary">{{ totalCount }}</span>
+        </h6>
+        
+        <!-- Search and Filter Controls -->
+        <div class="d-flex gap-2 flex-wrap">
+          <div class="input-group input-group-sm" style="width: 200px;">
+            <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" 
+                   class="form-control text-xs" placeholder="Search subcategories...">
+            <button type="button" class="btn btn-outline-primary btn-sm px-2" (click)="onSearch()">
+              <i class="bi bi-search"></i>
+            </button>
+          </div>
+          
+          <select [(ngModel)]="filterCategoryId" (change)="onCategoryFilterChange()" 
+                  class="form-select form-select-sm text-xs" style="width: auto;">
+            <option [ngValue]="undefined">All Categories</option>
+            <option *ngFor="let category of categories; trackBy: trackByCategoryId" 
+                    [ngValue]="category.categoryId">
+              {{ category.categoryName }}
+            </option>
+          </select>
+          
+          <select [(ngModel)]="filterActive" (change)="onSearch()" 
+                  class="form-select form-select-sm text-xs" style="width: auto;">
+            <option [ngValue]="undefined">All Status</option>
+            <option [ngValue]="true">Active</option>
+            <option [ngValue]="false">Inactive</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="text-center py-3">
+        <div class="spinner-border spinner-border-sm text-primary"></div>
+        <div class="mt-1 small">Loading subcategories...</div>
+      </div>
+
+      <!-- Subcategories Table -->
+      <div *ngIf="!isLoading" class="table-responsive">
+        <table class="table table-hover table-sm table-compact mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="py-2 text-xs">Subcategory Name</th>
+              <th class="py-2 text-xs">Category</th>
+              <th class="py-2 text-xs">Description</th>
+              <th class="py-2 text-xs">Order</th>
+              <th class="py-2 text-xs">Items</th>
+              <th class="py-2 text-xs">Status</th>
+              <th class="py-2 text-xs">Created</th>
+              <th class="py-2 text-xs" width="120">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let subcategory of subcategories; trackBy: trackBySubcategoryId" 
+                [class.table-warning]="!subcategory.isActive">
+              <td class="py-2">
+                <strong class="text-xs">{{ subcategory.subcategoryName }}</strong>
+              </td>
+              <td class="py-2">
+                <span class="badge badge-sm bg-info">{{ subcategory.categoryName }}</span>
+              </td>
+              <td class="py-2">
+                <span class="text-xs">{{ subcategory.description || '-' }}</span>
+              </td>
+              <td class="py-2">
+                <span class="text-xs">{{ subcategory.displayOrder }}</span>
+              </td>
+              <td class="py-2">
+                <span class="badge badge-sm bg-secondary">{{ subcategory.itemCount }}</span>
+              </td>
+              <td class="py-2">
+                <span class="badge badge-sm" [ngClass]="subcategory.isActive ? 'bg-success' : 'bg-danger'">
+                  <i [class]="subcategory.isActive ? 'bi bi-check' : 'bi bi-x'"></i>
+                  {{ subcategory.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td class="py-2">
+                <small class="text-xs">{{ subcategory.createdDate | date:'short' }}</small>
+              </td>
+              <td class="py-2">
+                <div class="btn-group btn-group-sm">
+                  <button type="button" class="btn btn-outline-primary btn-xs px-1" 
+                          (click)="editSubcategory(subcategory)" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button type="button" class="btn btn-outline-danger btn-xs px-1" 
+                          (click)="deleteSubcategory(subcategory)" title="Delete"
+                          [disabled]="subcategory.itemCount > 0">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            
+            <!-- Empty State -->
+            <tr *ngIf="subcategories.length === 0">
+              <td colspan="8" class="text-center py-4 text-muted">
+                <i class="bi bi-bookmark display-4 mb-2 d-block"></i>
+                <div class="small">No subcategories found</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <nav *ngIf="totalPages > 1" class="mt-2 px-3 pb-2">
+        <ul class="pagination pagination-sm justify-content-center mb-0">
+          <li class="page-item" [class.disabled]="currentPage <= 1">
+            <button class="page-link px-2 py-1 text-xs" (click)="onPageChange(1)" 
+                    [disabled]="currentPage <= 1">
+              <i class="bi bi-chevron-double-left"></i>
+            </button>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage <= 1">
+            <button class="page-link px-2 py-1 text-xs" 
+                    (click)="onPageChange(currentPage - 1)" 
+                    [disabled]="currentPage <= 1">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+          </li>
+          
+          <li *ngFor="let page of getPaginationNumbers()" 
+              class="page-item" [class.active]="page === currentPage">
+            <button class="page-link px-2 py-1 text-xs" (click)="onPageChange(page)">{{ page }}</button>
+          </li>
+          
+          <li class="page-item" [class.disabled]="currentPage >= totalPages">
+            <button class="page-link px-2 py-1 text-xs" 
+                    (click)="onPageChange(currentPage + 1)" 
+                    [disabled]="currentPage >= totalPages">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage >= totalPages">
+            <button class="page-link px-2 py-1 text-xs" 
+                    (click)="onPageChange(totalPages)" 
+                    [disabled]="currentPage >= totalPages">
+              <i class="bi bi-chevron-double-right"></i>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>

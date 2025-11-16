@@ -1,0 +1,61 @@
+<div class="help-page">
+  <nav class="page-navbar">
+    <div class="container">
+      <div class="nav-brand" routerLink="/">
+        <img src="assets/logo_compact2.png" alt="BusFood" height="60px"/>
+      </div>
+      <button class="close-btn" routerLink="/">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <nav class="breadcrumb">
+        <a routerLink="/">Home</a> / Help Center
+      </nav>
+      <h1>How Can We Help You?</h1>
+      <p>Find answers to common questions and get support</p>
+    </div>
+  </div>
+
+  <section class="search-section">
+    <div class="container">
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="Search for help...">
+      </div>
+    </div>
+  </section>
+
+  <section class="categories-section">
+    <div class="container">
+      <h2>Browse by Category</h2>
+      <div class="categories-grid">
+        <a [routerLink]="category.link" class="category-card" *ngFor="let category of categories">
+          <i class="bi" [class]="category.icon"></i>
+          <h3>{{ category.title }}</h3>
+          <p>{{ category.description }}</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact-section">
+    <div class="container">
+      <h2>Still Need Help?</h2>
+      <p>Our support team is available 24/7</p>
+      <div class="contact-options">
+        <a routerLink="/contact" class="contact-btn">
+          <i class="bi bi-envelope"></i>
+          Contact Support
+        </a>
+        <a href="tel:+918001234567" class="contact-btn">
+          <i class="bi bi-telephone"></i>
+          Call Us
+        </a>
+      </div>
+    </div>
+  </section>
+</div>

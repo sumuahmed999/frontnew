@@ -1,0 +1,152 @@
+<div class="confirmation-container">
+  <!-- Loading State -->
+  <div class="content-area" *ngIf="isLoading">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading order details...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div class="content-area" *ngIf="loadError && !isLoading">
+    <div class="error-state">
+      <i class="bi bi-exclamation-circle"></i>
+      <h3>Unable to load order</h3>
+      <p>{{ loadError }}</p>
+      <button (click)="retryLoad()">
+        <i class="bi bi-arrow-clockwise"></i> Retry
+      </button>
+    </div>
+  </div>
+
+  <!-- Content Area -->
+  <div class="content-area" *ngIf="!isLoading && !loadError">
+    <!-- Header -->
+    <div class="header">
+      <div class="success-animation">
+        <div class="checkmark-circle">
+          <i class="bi bi-check"></i>
+        </div>
+      </div>
+      <div class="success-message">
+        <h1>Order Confirmed!</h1>
+        <p>Your delicious meal is being prepared</p>
+      </div>
+    </div>
+
+    <!-- Order Details Card -->
+    <div class="order-card">
+      <!-- Order ID -->
+      <div class="order-id-section">
+        <div class="order-id-content">
+          <div class="order-id-info">
+            <i class="bi bi-receipt"></i>
+            <div>
+              <span class="label">Order ID</span>
+              <span class="value">#{{ orderId }}</span>
+            </div>
+          </div>
+          <div class="timing">
+            <i class="bi bi-clock"></i>
+            <span>{{ arrivalTime }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Restaurant & Location -->
+      <div class="restaurant-section">
+        <div class="restaurant-info">
+          <img src="assets/logo_compact2.png" alt="BusFood" height="60px"/>
+          <div class="location-text">
+            <h3>{{ busName }} ({{ busNumber }})</h3>
+            <p>{{ startLocation }} → {{ endLocation }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Items - Compact -->
+      <div class="order-items-section">
+        <div class="section-header">
+          <h4><i class="bi bi-bag"></i> Your Order</h4>
+          <span class="items-count">{{ orderItems.length }} items</span>
+        </div>
+
+        <div class="items-compact">
+          <div class="item-row" *ngFor="let item of orderItems">
+            <span class="item-name">{{ item.ItemName }}</span>
+            <span class="item-details">×{{ item.Quantity }} • ₹{{ formatCurrency(getItemTotal(item)) }}</span>
+          </div>
+        </div>
+
+        <!-- Total Section with Full Breakdown -->
+        <div class="total-section">
+          <!-- Subtotal -->
+          <div class="amount-row">
+            <span>Subtotal</span>
+            <span>₹{{ formatCurrency(subtotal) }}</span>
+          </div>
+
+          <!-- Tax Breakdown -->
+          <div class="amount-row" *ngIf="hasTax()">
+            <span>CGST (9%)</span>
+            <span>₹{{ formatCurrency(cgst) }}</span>
+          </div>
+          <div class="amount-row" *ngIf="hasTax()">
+            <span>SGST (9%)</span>
+            <span>₹{{ formatCurrency(sgst) }}</span>
+          </div>
+
+          <!-- Delivery Fee -->
+          <div class="amount-row" *ngIf="hasDeliveryFee()">
+            <span>Delivery Fee</span>
+            <span>₹{{ formatCurrency(deliveryFee) }}</span>
+          </div>
+
+          <!-- Promo Discount -->
+          <div class="discount-row" *ngIf="hasDiscount()">
+            <span><i class="bi bi-tag-fill"></i> {{ promoCode }}</span>
+            <span>-₹{{ formatCurrency(discountAmount) }}</span>
+          </div>
+
+          <!-- Total -->
+          <div class="total-row">
+            <span>Total Amount</span>
+            <span class="total-amount">₹{{ formatCurrency(totalAmount) }}</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Instructions - Compact -->
+      <div class="instructions-section">
+        <h4><i class="bi bi-info-circle"></i> Pickup Info</h4>
+        <div class="instructions-compact">
+          <div class="instruction-row">
+            <i class="bi bi-clock-fill"></i>
+            <span>Ready by <strong>{{ readyTime }}</strong></span>
+          </div>
+          <div class="instruction-row">
+            <i class="bi bi-telephone-fill"></i>
+            <span>Contact: <strong>{{ mobileNumber }}</strong></span>
+          </div>
+          <div class="instruction-row">
+            <i class="bi bi-geo-alt-fill"></i>
+            <span>Pickup at bus counter</span>
+          </div>
+          <div class="instruction-row">
+            <i class="bi bi-calendar3"></i>
+            <span><strong>{{ formatDate(departureDate) }}</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fixed Action Button (Only Track Order) -->
+  <div class="action-buttons" *ngIf="!isLoading && !loadError">
+    <button class="action-btn primary" (click)="trackOrder()">
+      <i class="bi bi-geo"></i>
+      <span>Track Order</span>
+    </button>
+  </div>
+</div>

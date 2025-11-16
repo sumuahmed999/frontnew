@@ -1,0 +1,269 @@
+<!-- src/app/admin/orders/orders.component.html -->
+<div class="orders-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h4 class="page-title">
+        <i class="bi bi-receipt me-2"></i>
+        Order Management
+      </h4>
+      <p class="page-subtitle">View and manage all orders</p>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-outline-primary btn-sm me-2" 
+              (click)="refreshOrders()"
+              [disabled]="isLoading"
+              title="Refresh Orders">
+        <i class="bi bi-arrow-clockwise me-1" 
+           [class.spin]="isLoading"></i>
+        Refresh
+      </button>
+
+      <button class="btn btn-primary btn-sm" 
+              (click)="exportOrders()"
+              title="Export Orders">
+        <i class="bi bi-download me-1"></i>
+        Export
+      </button>
+    </div>
+  </div>
+
+  <!-- Status Filter Tabs -->
+  <div class="status-filters">
+    <div class="filters-container">
+      <button *ngFor="let filter of statusFilters"
+              class="status-filter-btn"
+              [class.active]="currentStatus === filter.value"
+              [style.--filter-color]="filter.color"
+              (click)="changeStatusFilter(filter.value)">
+        <div class="filter-icon">
+          <i class="bi" [class]="filter.icon"></i>
+        </div>
+        <div class="filter-content">
+          <span class="filter-label">{{ filter.label }}</span>
+          <span class="filter-count">{{ filter.count }}</span>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Toolbar with Filters -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="current-filter-info">
+        <i class="bi" [class]="getCurrentFilter().icon"></i>
+        <span class="filter-text">
+          Showing <strong>{{ totalCount }}</strong> 
+          {{ getCurrentFilter().label }}
+        </span>
+      </div>
+    </div>
+
+    <div class="toolbar-right">
+      <!-- Date Range Filter -->
+      <div class="date-range-filter">
+        <label class="filter-label-small">Date Range:</label>
+        <select class="form-select form-select-sm" 
+                [(ngModel)]="dateRange"
+                (change)="changeDateRange(dateRange)">
+          <option value="today">Today</option>
+          <option value="yesterday">Yesterday</option>
+          <option value="week">Last 7 Days</option>
+          <option value="month">This Month</option>
+          <option value="custom">Custom Range</option>
+          <option value="all">All Time</option>
+        </select>
+      </div>
+
+      <!-- Page Size -->
+      <div class="page-size-filter">
+        <label class="filter-label-small">Show:</label>
+        <select class="form-select form-select-sm" 
+                [(ngModel)]="pageSize"
+                (change)="changePageSize(pageSize)">
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Date Range Picker -->
+  <div class="custom-date-picker" *ngIf="showCustomDatePicker">
+    <div class="date-picker-content">
+      <div class="date-picker-header">
+        <h6 class="date-picker-title">
+          <i class="bi bi-calendar-range me-2"></i>
+          Select Custom Date Range
+        </h6>
+        <button class="btn-close-picker" (click)="cancelCustomDateRange()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      
+      <div class="date-picker-body">
+        <div class="date-input-group">
+          <label class="date-label">From Date</label>
+          <input type="date" 
+                 class="form-control" 
+                 [(ngModel)]="customDateFrom"
+                 [max]="customDateTo || undefined">
+        </div>
+        
+        <div class="date-separator">
+          <i class="bi bi-arrow-right"></i>
+        </div>
+        
+        <div class="date-input-group">
+          <label class="date-label">To Date</label>
+          <input type="date" 
+                 class="form-control" 
+                 [(ngModel)]="customDateTo"
+                 [min]="customDateFrom || undefined">
+        </div>
+      </div>
+      
+      <div class="date-picker-footer">
+        <button class="btn btn-outline-secondary btn-sm" 
+                (click)="cancelCustomDateRange()">
+          Cancel
+        </button>
+        <button class="btn btn-primary btn-sm" 
+                (click)="applyCustomDateRange()">
+          <i class="bi bi-check-circle me-1"></i>
+          Apply
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Advanced Filters -->
+  <div class="advanced-filters">
+    <div class="filters-row">
+      <div class="filter-group">
+        <label class="filter-label">Search Passenger</label>
+        <input type="text" 
+               class="form-control form-control-sm" 
+               [(ngModel)]="searchQuery"
+               placeholder="Passenger name..."
+               (keyup.enter)="applySearch()">
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Bus Number</label>
+        <input type="text" 
+               class="form-control form-control-sm" 
+               [(ngModel)]="busNumberFilter"
+               placeholder="Bus number..."
+               (keyup.enter)="applySearch()">
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Passenger Phone</label>
+        <input type="text" 
+               class="form-control form-control-sm" 
+               [(ngModel)]="passengerPhoneFilter"
+               placeholder="Phone number..."
+               (keyup.enter)="applySearch()">
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn btn-primary btn-sm" 
+                (click)="applySearch()"
+                [disabled]="isLoading">
+          <i class="bi bi-search me-1"></i>
+          Search
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" 
+                (click)="clearFilters()"
+                [disabled]="isLoading">
+          <i class="bi bi-x-circle me-1"></i>
+          Clear
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-overlay" *ngIf="isLoading && allOrders.length === 0">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3">Loading orders...</p>
+  </div>
+
+  <!-- Orders List -->
+  <div class="orders-content" *ngIf="!isLoading || allOrders.length > 0">
+    <app-recent-orders 
+      [orders]="filteredOrders"
+      [isLoading]="isLoading"
+      [pendingCount]="getPendingCount()"
+      [showLocationButton]="true"
+      (orderUpdated)="onOrderUpdated($event)"
+      (viewLocation)="viewLocation($event)">
+    </app-recent-orders>
+  </div>
+
+  <!-- Location Modal -->
+  <app-user-location-modal></app-user-location-modal>
+
+  <!-- Pagination -->
+  <div class="pagination-container" *ngIf="totalPages > 1">
+    <div class="pagination-info">
+      Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, totalCount) }} of {{ totalCount }} orders
+    </div>
+    
+    <nav class="pagination-nav">
+      <ul class="pagination">
+        <!-- Previous Button -->
+        <li class="page-item" [class.disabled]="!hasPreviousPage">
+          <button class="page-link" 
+                  (click)="changePage(currentPage - 1)"
+                  [disabled]="!hasPreviousPage">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+        </li>
+
+        <!-- Page Numbers -->
+        <li *ngFor="let page of getPageNumbers()" 
+            class="page-item" 
+            [class.active]="page === currentPage"
+            [class.disabled]="page === -1">
+          <button *ngIf="page !== -1" 
+                  class="page-link" 
+                  (click)="changePage(page)">
+            {{ page }}
+          </button>
+          <span *ngIf="page === -1" class="page-link">...</span>
+        </li>
+
+        <!-- Next Button -->
+        <li class="page-item" [class.disabled]="!hasNextPage">
+          <button class="page-link" 
+                  (click)="changePage(currentPage + 1)"
+                  [disabled]="!hasNextPage">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && filteredOrders.length === 0">
+    <div class="empty-icon">
+      <i class="bi bi-inbox"></i>
+    </div>
+    <h5 class="empty-title">No Orders Found</h5>
+    <p class="empty-text">
+      There are no {{ currentStatus === 'all' ? '' : currentStatus }} orders 
+      {{ dateRange === 'all' ? '' : 'in the selected date range' }}.
+    </p>
+    <button class="btn btn-primary btn-sm" (click)="clearFilters()">
+      <i class="bi bi-x-circle me-1"></i>
+      Clear Filters
+    </button>
+  </div>
+</div>

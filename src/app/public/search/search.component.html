@@ -1,0 +1,118 @@
+<div class="app-container">
+  <!-- Clean Header -->
+  <header class="header">
+    <div class="header-content">
+      <img src="assets/logo_compact2.png" alt="BusFood" class="logo" />
+      <div class="header-text">
+        <h1>Route Eat</h1>
+        <p>Pre-order food on your journey</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="search-container">
+      <div class="search-header">
+        <h2>Create New Booking</h2>
+        <p>Enter your journey details to get started</p>
+      </div>
+
+      <form class="search-form" (ngSubmit)="searchRoute()">
+        <!-- Bus Info Section -->
+        <div class="form-section">
+          <h3><i class="bi bi-bus-front"></i> Bus Information</h3>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Bus Name <span class="required">*</span></label>
+              <input type="text" [(ngModel)]="busName" name="busName" placeholder="" required
+                maxlength="100" />
+            </div>
+            <div class="form-field">
+              <label>Bus Number <span class="required">*</span></label>
+              <input type="text" [(ngModel)]="busNumber" name="busNumber" placeholder="" required
+                maxlength="20" style="text-transform: uppercase;" (input)="busNumber = busNumber.toUpperCase()" />
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Location Section -->
+        <div class="form-section">
+          <h3><i class="bi bi-geo-alt"></i> Journey Details</h3>
+          <div class="form-row">
+            <div class="form-field">
+              <app-location-select label="From" placeholder="Select boarding point" [selectedLocation]="boardingPoint"
+                [locations]="startLocations" (locationSelected)="onBoardingPointSelected($event)">
+              </app-location-select>
+            </div>
+            <div class="form-field">
+              <app-location-select label="To" placeholder="Select destination" [selectedLocation]="destination"
+                [locations]="endLocations" [disabled]="!boardingPoint"
+                (locationSelected)="onDestinationSelected($event)">
+              </app-location-select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Date Time Section -->
+        <div class="form-section">
+          <h3><i class="bi bi-calendar3"></i> Departure Schedule</h3>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Departure Date <span class="required">*</span></label>
+              <input type="date" [(ngModel)]="departureDate" name="departureDate" [min]="departureDate" required />
+            </div>
+            <div class="form-field">
+              <label>Departure Time <span class="required">*</span></label>
+              <input type="time" [(ngModel)]="departureTime" name="departureTime" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- Search Button -->
+        <button type="submit" class="search-btn" [disabled]="!isFormValid() || isLoading">
+          <i class="bi bi-search" *ngIf="!isLoading"></i>
+          <i class="bi bi-arrow-clockwise spin" *ngIf="isLoading"></i>
+          <span *ngIf="!isLoading">Search Routes</span>
+          <span *ngIf="isLoading">Searching...</span>
+        </button>
+
+        <!-- Errors -->
+        <div class="error-message" *ngIf="error">
+          <i class="bi bi-exclamation-circle"></i>
+          {{ error }}
+        </div>
+        <div class="error-message" *ngIf="boardingPoint && destination && boardingPoint.id === destination.id">
+          <i class="bi bi-exclamation-circle"></i>
+          Boarding point and destination must be different
+        </div>
+      </form>
+
+      <!-- Results Preview -->
+      <div class="results-section" *ngIf="searchResults.length > 0">
+        <h3><i class="bi bi-list-check"></i> Available Routes</h3>
+        <div class="route-card" *ngFor="let route of searchResults">
+          <div class="route-header">
+            <span class="route-name">{{ route.routeName }}</span>
+            <span class="route-status active">Active</span>
+          </div>
+          <div class="route-info">
+            <div class="info-item">
+              <i class="bi bi-signpost"></i>
+              <span>{{ route.distanceKm }} km</span>
+            </div>
+            <div class="info-item">
+              <i class="bi bi-clock"></i>
+              <span>{{ route.estimatedTime }}</span>
+            </div>
+            <div class="info-item">
+              <i class="bi bi-geo"></i>
+              <span>{{ route.stepOvers.length }} stops</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

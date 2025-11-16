@@ -1,0 +1,299 @@
+// restaurant-form.component.scss
+.restaurant-management {
+  padding: 1rem;
+}
+
+// Loading Overlay
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-text {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+// Form Styles
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.form-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-col-1 {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-col-2 {
+  flex: 2;
+  min-width: 0;
+}
+
+.form-col-full {
+  flex: 1 1 100%;
+}
+
+.form-label-compact {
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+  display: block;
+  color: #495057;
+}
+
+.form-control-compact {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8rem;
+  height: 32px;
+  line-height: 1.2;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+
+  &:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &[type="file"] {
+    padding: 0.25rem 0.5rem;
+  }
+
+  // Textarea specific
+  &[rows] {
+    height: auto;
+    resize: vertical;
+  }
+}
+
+.form-help-text {
+  font-size: 0.7rem;
+  color: #6c757d;
+  margin-top: 0.2rem;
+  display: block;
+}
+
+.error-space {
+  height: 16px;
+  margin-top: 0.2rem;
+}
+
+.error-text-compact {
+  font-size: 0.7rem;
+  color: #dc3545;
+  line-height: 1.2;
+  height: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.error-spacer {
+  height: 16px;
+}
+
+.btn-compact {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  height: 32px;
+  line-height: 1.2;
+}
+
+.form-actions {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+// Card Styles
+.card {
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 0.75rem 1rem;
+
+  small {
+    display: block;
+    margin-top: 0.25rem;
+  }
+}
+
+.card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+// Section Dividers
+.section-divider {
+  margin: 1.5rem 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e9ecef;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #495057;
+  display: flex;
+  align-items: center;
+
+  i {
+    font-size: 0.8rem;
+    color: #6c757d;
+  }
+}
+
+// Alert Styles
+.alert-compact {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  border-radius: 0.25rem;
+  position: relative;
+}
+
+.btn-close-sm {
+  padding: 0.2rem;
+  font-size: 0.7rem;
+}
+
+// Logo Upload Styles
+.logo-preview-container {
+  width: 80px;
+  height: 80px;
+  border: 2px dashed #dee2e6;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.logo-preview {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.25rem;
+}
+
+.btn-remove-logo {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background-color: rgba(220, 53, 69, 0.8);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgba(220, 53, 69, 1);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.logo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  font-size: 0.7rem;
+
+  i {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  span {
+    text-align: center;
+  }
+}
+
+// Loading States
+.spinner-border-sm {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+// Responsive Design
+@media (max-width: 992px) {
+  .form-row {
+    flex-wrap: wrap;
+    
+    .form-col {
+      flex-basis: calc(50% - 0.5rem);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+    gap: 0.5rem;
+    
+    .form-col, .form-col-1, .form-col-2 {
+      flex-basis: 100%;
+    }
+  }
+  
+  .logo-preview-container {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+// Utility Classes
+.d-none {
+  display: none !important;
+}

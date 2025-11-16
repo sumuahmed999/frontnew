@@ -1,0 +1,233 @@
+<!-- src/app/admin/dashboard/dashboard.component.html -->
+<div class="dashboard-container">
+  <!-- System Toggle -->
+  <app-system-toggle></app-system-toggle>
+
+  <!-- Order Notification Modal -->
+  <app-order-notification></app-order-notification>
+
+  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h4 class="dashboard-title">
+        <i class="bi bi-speedometer2 me-2"></i>
+        Dashboard Overview
+      </h4>
+      <p class="dashboard-subtitle">Monitor your bus dining platform performance</p>
+    </div>
+    <div class="header-actions">
+      <!-- Connection Status -->
+      <div class="connection-status"
+           [class.connected]="isConnected"
+           [class.disconnected]="!isConnected"
+           [attr.title]="connectionStatus">
+        <span class="status-dot"
+              [class.status-dot-connected]="isConnected"
+              [class.status-dot-disconnected]="!isConnected"
+              [class.pulse]="isConnected"></span>
+        <i class="bi me-1"
+           [class.bi-wifi]="isConnected"
+           [class.bi-wifi-off]="!isConnected"></i>
+        <span class="connection-text">{{ connectionStatus }}</span>
+        <button *ngIf="!isConnected"
+                class="btn-reconnect"
+                (click)="reconnect()"
+                title="Reconnect">
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
+      </div>
+
+      <!-- Action Buttons -->
+      <button class="btn btn-outline-primary btn-sm me-2" 
+              (click)="refreshDashboard()"
+              [disabled]="isLoadingStats"
+              title="Refresh Dashboard">
+        <i class="bi bi-arrow-clockwise me-1" 
+           [class.spin]="isLoadingStats"></i>
+        Refresh
+      </button>
+
+      <button class="btn btn-primary btn-sm" (click)="exportReport()">
+        <i class="bi bi-download me-1"></i> Export Report
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="isLoadingStats && stats.todaysOrders === 0">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3">Loading dashboard data...</p>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid" *ngIf="!isLoadingStats || stats.todaysOrders > 0">
+    <!-- Today's Orders -->
+    <div class="stat-card stat-orders">
+      <div class="stat-icon">
+        <i class="bi bi-bag-check"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.todaysOrders }}</div>
+        <div class="stat-label">Today's Orders</div>
+        <div class="stat-change" 
+             [class.positive]="stats.todaysOrders >= stats.yesterdaysOrders"
+             [class.negative]="stats.todaysOrders < stats.yesterdaysOrders">
+          <i class="bi" 
+             [class.bi-arrow-up]="stats.todaysOrders >= stats.yesterdaysOrders"
+             [class.bi-arrow-down]="stats.todaysOrders < stats.yesterdaysOrders"></i>
+          {{ calculatePercentageChange(stats.todaysOrders, stats.yesterdaysOrders) }}%
+        </div>
+        <div class="stat-comparison">Yesterday: {{ stats.yesterdaysOrders }}</div>
+      </div>
+    </div>
+
+    <!-- Pending Bookings -->
+    <div class="stat-card stat-pending">
+      <div class="stat-icon">
+        <i class="bi bi-hourglass-split"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.pendingBookings }}</div>
+        <div class="stat-label">Pending Bookings</div>
+        <div class="stat-badge badge-pending" *ngIf="stats.pendingBookings > 0">
+          Needs Action
+        </div>
+        <div class="stat-badge badge-success" *ngIf="stats.pendingBookings === 0">
+          All Clear
+        </div>
+      </div>
+    </div>
+
+    <!-- Preparing -->
+    <div class="stat-card stat-preparing">
+      <div class="stat-icon">
+        <i class="bi bi-fire"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.preparingBookings }}</div>
+        <div class="stat-label">Preparing</div>
+        <div class="stat-badge badge-preparing" *ngIf="stats.preparingBookings > 0">
+          In Kitchen
+        </div>
+      </div>
+    </div>
+
+    <!-- Ready to Deliver -->
+    <div class="stat-card stat-ready">
+      <div class="stat-icon">
+        <i class="bi bi-box-seam"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.readyToDeliverBookings }}</div>
+        <div class="stat-label">Ready to Deliver</div>
+        <div class="stat-badge badge-ready" *ngIf="stats.readyToDeliverBookings > 0">
+          Ready
+        </div>
+      </div>
+    </div>
+
+    <!-- Completed -->
+    <div class="stat-card stat-completed">
+      <div class="stat-icon">
+        <i class="bi bi-check-circle"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.completedBookings }}</div>
+        <div class="stat-label">Completed</div>
+        <div class="stat-badge badge-completed" *ngIf="stats.completedBookings > 0">
+          Done Today
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue -->
+    <div class="stat-card stat-revenue">
+      <div class="stat-icon">
+        <i class="bi bi-currency-rupee"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ formatCurrency(stats.todaysRevenue) }}</div>
+        <div class="stat-label">Today's Revenue</div>
+        <div class="stat-change" 
+             [class.positive]="stats.todaysRevenue >= stats.yesterdaysRevenue"
+             [class.negative]="stats.todaysRevenue < stats.yesterdaysRevenue">
+          <i class="bi" 
+             [class.bi-arrow-up]="stats.todaysRevenue >= stats.yesterdaysRevenue"
+             [class.bi-arrow-down]="stats.todaysRevenue < stats.yesterdaysRevenue"></i>
+          {{ calculatePercentageChange(stats.todaysRevenue, stats.yesterdaysRevenue) }}%
+        </div>
+        <div class="stat-comparison">Yesterday: {{ formatCurrency(stats.yesterdaysRevenue) }}</div>
+      </div>
+    </div>
+
+    <!-- Total Passengers -->
+    <div class="stat-card stat-passengers">
+      <div class="stat-icon">
+        <i class="bi bi-people"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.totalPassengers }}</div>
+        <div class="stat-label">Active Passengers</div>
+        <div class="stat-info">Today & Yesterday</div>
+      </div>
+    </div>
+
+    <!-- Canceled Orders -->
+    <div class="stat-card stat-canceled">
+      <div class="stat-icon">
+        <i class="bi bi-x-circle"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.canceledBookings }}</div>
+        <div class="stat-label">Canceled/Rejected</div>
+        <div class="stat-info">Last 2 Days</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Grid -->
+  <div class="content-grid">
+    <!-- Recent Orders Component -->
+    <app-recent-orders 
+      [orders]="recentOrders"
+      [isLoading]="isLoadingOrders"
+      [pendingCount]="stats.pendingBookings"
+      [showLocationButton]="true"
+      (orderUpdated)="onOrderUpdated($event)"
+      (viewLocation)="viewLocation($event)">
+    </app-recent-orders>
+  </div>
+
+  <!-- Location Modal -->
+  <app-user-location-modal></app-user-location-modal>
+
+  <!-- Quick Stats Summary -->
+  <div class="summary-section" *ngIf="stats.todaysOrders > 0">
+    <div class="summary-card">
+      <h6 class="summary-title">
+        <i class="bi bi-graph-up me-2"></i>
+        Performance Summary
+      </h6>
+      <div class="summary-content">
+        <div class="summary-item">
+          <span class="summary-label">Total Revenue (2 days):</span>
+          <span class="summary-value">{{ formatCurrency(stats.totalRevenue) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Average Order Value:</span>
+          <span class="summary-value">
+            {{ stats.todaysOrders > 0 ? formatCurrency(stats.todaysRevenue / stats.todaysOrders) : '₹0' }}
+          </span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Order Completion Rate:</span>
+          <span class="summary-value">
+            {{ stats.todaysOrders > 0 ? ((stats.completedBookings / stats.todaysOrders) * 100).toFixed(1) : '0' }}%
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

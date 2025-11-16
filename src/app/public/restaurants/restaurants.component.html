@@ -1,0 +1,198 @@
+<div class="restaurants-container">
+  <!-- Compact Header -->
+  <div class="header">
+    <button class="back-btn" (click)="goBack()">
+      <i class="bi bi-arrow-left"></i>
+    </button>
+    
+    <div class="stop-info">
+      <div class="stop-details">
+        <div class="stop-title">
+          <h2>{{stopName || 'Loading...' }}</h2>
+          <div class="status-badge" *ngIf="bookingDetails" [class]="'status-' + bookingDetails.bookingStatus.toLowerCase()">
+            {{ bookingDetails.bookingStatus }}
+          </div>
+        </div>
+        
+        <div class="stop-meta">
+          <span class="arrival-info">
+            <i class="bi bi-clock-fill"></i>
+            {{ getCalculatedArrivalTime() }}
+          </span>
+          <span class="separator">•</span>
+          <span class="stop-duration">
+            <i class="bi bi-hourglass-split"></i>
+            {{ currentStopDetails?.stopDuration || '15 min' }}
+          </span>
+          <span class="separator" *ngIf="bookingDetails">•</span>
+          <span class="route-text" *ngIf="bookingDetails">
+            <i class="bi bi-geo-alt"></i>
+            {{ fromLocation }} → {{ toLocation }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compact Loading State -->
+  <div class="compact-loading" *ngIf="isLoadingBookingDetails">
+    <div class="loading-bar">
+      <div class="loading-progress"></div>
+    </div>
+    <small>Loading booking details...</small>
+  </div>
+
+  <!-- Compact Error State -->
+  <div class="compact-error" *ngIf="bookingDetailsError && !isLoadingBookingDetails">
+    <div class="error-banner">
+      <i class="bi bi-exclamation-triangle"></i>
+      <span>{{ bookingDetailsError }}</span>
+      <button class="retry-btn" (click)="retryBookingDetails()">
+        <i class="bi bi-arrow-clockwise"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Enhanced Content -->
+  <div class="restaurants-content">
+    <!-- Simplified Header Section -->
+    <div class="content-header">
+      <div class="section-info">
+        <h3>Available Restaurants</h3>
+        <p>{{ filteredRestaurants.length }} restaurants available at {{ selectedStop.name || stopName }}</p>
+      </div>
+      
+      <!-- Simple Veg Filter Only -->
+      <div class="veg-filter">
+        <button class="veg-toggle" 
+                [class.active]="selectedFilter === 'veg'"
+                (click)="toggleVegFilter()">
+          <i class="bi bi-leaf"></i>
+          <span>Veg Only</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Booking API Loading State -->
+    <div class="booking-loading" *ngIf="isLoadingBooking">
+      <div class="loading-card">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+        </div>
+        <h4>Loading restaurants...</h4>
+        <p>Fetching available restaurants at {{ selectedStop.name || stopName }}</p>
+      </div>
+    </div>
+
+    <!-- Booking API Error State -->
+    <div class="booking-error" *ngIf="bookingError && !isLoadingBooking">
+      <div class="error-card">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <h4>Unable to load restaurants</h4>
+        <p>{{ bookingError }}</p>
+        <div class="error-actions">
+          <button class="btn-retry" (click)="retryBookingAPI()">
+            <i class="bi bi-arrow-clockwise"></i>
+            Try Again
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Results Message -->
+    <div class="no-results" *ngIf="!isLoadingBooking && !isLoadingBookingDetails && !bookingError && filteredRestaurants.length === 0">
+      <i class="bi bi-search"></i>
+      <h4>No restaurants found</h4>
+      <p *ngIf="selectedFilter === 'veg'">No vegetarian restaurants available at this stop</p>
+      <p *ngIf="selectedFilter !== 'veg'">No restaurants are available at {{ selectedStop.name || stopName }}</p>
+      <button class="reset-filters" *ngIf="selectedFilter === 'veg'" (click)="resetFilters()">
+        <i class="bi bi-arrow-clockwise"></i>
+        Show All Restaurants
+      </button>
+    </div>
+
+    <!-- Simplified Restaurants Grid -->
+    <div class="restaurants-grid" *ngIf="!isLoadingBooking && !isLoadingBookingDetails && !bookingError && filteredRestaurants.length > 0">
+      <div class="restaurant-card" 
+           *ngFor="let restaurant of filteredRestaurants; let i = index" 
+           (click)="selectRestaurant(restaurant)"
+           [style.animation-delay.ms]="i * 100">
+        
+        <!-- Restaurant Image -->
+        <div class="restaurant-image">
+          <img [src]="getRestaurantImage(restaurant)" 
+               [alt]="restaurant.name"
+               (error)="onImageError($event, restaurant)" />
+          
+          <!-- Veg/Non-Veg Indicator -->
+          <div class="veg-indicator" [class.veg]="restaurant.isVeg" [class.non-veg]="!restaurant.isVeg">
+            <div class="veg-dot"></div>
+          </div>
+
+          <!-- Time Overlay -->
+          <div class="time-overlay">
+            <i class="bi bi-clock-fill"></i>
+            {{ restaurant.deliveryTime }} min
+          </div>
+        </div>
+        
+        <!-- Restaurant Content -->
+        <div class="restaurant-content">
+          <!-- Restaurant Header -->
+          <div class="restaurant-header">
+            <h3>{{ restaurant.name }}</h3>
+            <div class="price-tag">{{ restaurant.priceRange }}</div>
+          </div>
+          
+          <!-- Restaurant Type -->
+          <div class="restaurant-type">
+            <span class="type-badge" [class.veg-type]="restaurant.isVeg">
+              {{ restaurant.isVeg ? 'Pure Vegetarian' : 'Veg & Non-Veg' }}
+            </span>
+          </div>
+
+          <!-- Popular Items -->
+          <div class="popular-section" *ngIf="restaurant.popularItems && restaurant.popularItems.length > 0">
+            <div class="popular-label">Popular:</div>
+            <div class="popular-list">
+              <span class="popular-item" *ngFor="let item of restaurant.popularItems.slice(0, 3); let last = last">
+                {{ item }}<span *ngIf="!last">, </span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Order Info -->
+          <div class="order-footer">
+            <div class="rating-info">
+              <div class="rating">
+                <i class="bi bi-star-fill"></i>
+                <span>{{ restaurant.rating }}</span>
+              </div>
+              <span class="order-time">{{ restaurant.deliveryTime }} min to prepare</span>
+            </div>
+            
+            <div class="order-status" [class.available]="restaurant.takeOrders">
+              {{ restaurant.takeOrders ? 'Available' : 'Closed' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="quick-info" *ngIf="!isLoadingBooking && !isLoadingBookingDetails && !bookingError && filteredRestaurants.length > 0">
+      <div class="info-item">
+        <i class="bi bi-shield-check"></i>
+        <span>Safe & Hygienic</span>
+      </div>
+      <div class="info-item">
+        <i class="bi bi-clock"></i>
+        <span>Pick up on time</span>
+      </div>
+      <div class="info-item">
+        <i class="bi bi-cash"></i>
+        <span>Multiple payments</span>
+      </div>
+    </div>
+  </div>
+</div>

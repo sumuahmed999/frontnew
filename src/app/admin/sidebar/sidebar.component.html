@@ -1,0 +1,94 @@
+<nav class="sidebar" [class.collapsed]="isCollapsed">
+  <div class="sidebar-content">
+    <!-- Logo & Brand -->
+    <div class="sidebar-header">
+      <div class="brand-container">
+        <div class="brand-icon">
+          <i class="bi bi-bus-front"></i>
+        </div>
+        <span class="brand-text" *ngIf="!isCollapsed">RouteEat</span>
+      </div>
+      
+      <!-- Desktop Toggle Button -->
+      <button class="sidebar-toggle d-none d-lg-flex" (click)="onToggleSidebar()">
+        <i class="bi bi-chevron-left toggle-icon" [class.rotated]="isCollapsed"></i>
+      </button>
+      
+      <!-- Mobile Close Button -->
+      <button class="mobile-close-btn d-lg-none" (click)="onCloseSidebar()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="sidebar-nav">
+      <ul class="nav-list">
+        <li class="nav-item" *ngFor="let item of menuItems">
+          
+          <!-- Menu item without children -->
+          <ng-container *ngIf="!item.children">
+            <a [routerLink]="item.path" 
+               routerLinkActive="active" 
+               class="nav-link" 
+               [title]="isCollapsed ? item.title : ''"
+               (click)="onCloseSidebar()">
+              <i class="nav-icon" [class]="item.icon"></i>
+              <span class="nav-text">{{ item.label }}</span>
+            </a>
+          </ng-container>
+
+          <!-- Menu item with children -->
+          <ng-container *ngIf="item.children">
+            <div class="nav-link nav-toggle" 
+                 [class.expanded]="item.expanded"
+                 [class.has-active-child]="isParentActive(item)"
+                 (click)="toggleSubmenu(item, $event)"
+                 [title]="isCollapsed ? item.title : ''">
+              <div class="nav-link-content">
+                <i class="nav-icon" [class]="item.icon"></i>
+                <span class="nav-text">{{ item.label }}</span>
+              </div>
+              <i class="bi bi-chevron-down submenu-arrow" 
+                 [class.rotated]="item.expanded"></i>
+            </div>
+            
+            <!-- Submenu -->
+            <ul class="submenu" 
+                [class.show]="item.expanded"
+                [class.mobile-show]="item.expanded">
+              <li class="submenu-item" *ngFor="let child of item.children">
+                <a [routerLink]="child.path" 
+                   routerLinkActive="active" 
+                   class="submenu-link"
+                   [title]="child.title"
+                   (click)="onCloseSidebar()">
+                  <i class="submenu-icon" [class]="child.icon"></i>
+                  <span class="submenu-text">{{ child.label }}</span>
+                </a>
+              </li>
+            </ul>
+          </ng-container>
+        </li>
+      </ul>
+    </div>
+
+    <!-- User Profile -->
+    <div class="sidebar-footer">
+      <div class="user-profile" [title]="isCollapsed ? userData?.username : ''">
+        <div class="user-avatar">{{ userData?.username?.charAt(0)?.toUpperCase() || 'A' }}</div>
+        <div class="user-info" *ngIf="!isCollapsed">
+          <div class="user-name">{{ userData?.username || 'Admin' }}</div>
+          <div class="user-role">Administrator</div>
+        </div>
+        <button class="logout-btn" (click)="onLogout()" [title]="isCollapsed ? 'Logout' : ''">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Overlay -->
+<div class="mobile-overlay d-lg-none" 
+     [class.show]="isCollapsed" 
+     (click)="onCloseSidebar()"></div>

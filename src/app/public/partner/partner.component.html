@@ -1,0 +1,97 @@
+<div class="partner-page">
+  <nav class="page-navbar">
+    <div class="container">
+      <div class="nav-brand" routerLink="/">
+        <img src="assets/logo_compact2.png" alt="BusFood" height="60px"/>
+      </div>
+      <button class="close-btn" routerLink="/">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <nav class="breadcrumb">
+        <a routerLink="/">Home</a> / Become a Partner
+      </nav>
+      <h1>Partner With RouteEat</h1>
+      <p>Grow your restaurant business by reaching thousands of travelers</p>
+    </div>
+  </div>
+
+  <section class="benefits-section">
+    <div class="container">
+      <h2>Why Partner With Us?</h2>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <i class="bi bi-people"></i>
+          <h3>Reach More Customers</h3>
+          <p>Access thousands of travelers on 50+ routes daily</p>
+        </div>
+        <div class="benefit-card">
+          <i class="bi bi-graph-up"></i>
+          <h3>Increase Revenue</h3>
+          <p>Boost sales with minimal additional effort</p>
+        </div>
+        <div class="benefit-card">
+          <i class="bi bi-phone"></i>
+          <h3>Easy Technology</h3>
+          <p>Simple app to manage orders and track deliveries</p>
+        </div>
+        <div class="benefit-card">
+          <i class="bi bi-cash-stack"></i>
+          <h3>Quick Payments</h3>
+          <p>Receive payments within 24 hours</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <div class="container">
+      <h2>Join Our Network</h2>
+      <p>Fill out the form below and our team will contact you within 24 hours</p>
+
+      <div class="success-message" *ngIf="isSubmitted">
+        <i class="bi bi-check-circle-fill"></i>
+        <h3>Application Submitted!</h3>
+        <p>Thank you for your interest. We'll contact you soon.</p>
+      </div>
+
+      <form class="partner-form" (ngSubmit)="onSubmit()" *ngIf="!isSubmitted">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Restaurant Name *</label>
+            <input type="text" [(ngModel)]="partnerForm.restaurantName" name="restaurantName" required>
+          </div>
+          <div class="form-group">
+            <label>Owner Name *</label>
+            <input type="text" [(ngModel)]="partnerForm.ownerName" name="ownerName" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" [(ngModel)]="partnerForm.email" name="email" required>
+          </div>
+          <div class="form-group">
+            <label>Phone *</label>
+            <input type="tel" [(ngModel)]="partnerForm.phone" name="phone" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Location *</label>
+          <input type="text" [(ngModel)]="partnerForm.location" name="location" required>
+        </div>
+        <div class="form-group">
+          <label>Tell us about your restaurant</label>
+          <textarea [(ngModel)]="partnerForm.message" name="message" rows="4"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Submitting...' : 'Submit Application' }}
+        </button>
+      </form>
+    </div>
+  </section>
+</div>

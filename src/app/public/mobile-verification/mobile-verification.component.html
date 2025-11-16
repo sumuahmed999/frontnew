@@ -1,0 +1,537 @@
+<div class="verification-container">
+  <!-- Fixed Header -->
+  <div class="header fixed-header">
+    <button class="back-btn" (click)="goBack()">
+      <i class="bi bi-arrow-left"></i>
+    </button>
+    
+    <div class="header-info">
+      <div class="page-title">
+        <h1>Mobile Verification</h1>
+        <div class="security-badge">
+          <i class="bi bi-shield-fill-check"></i>
+          <span>Secure Checkout</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="progress-indicator">
+  <div class="step" [class.active]="currentStep === 'mobile'" [class.completed]="currentStep === 'otp'">
+    <span>1</span>
+    <small>Mobile</small>
+  </div>
+  <div class="step-line" [class.completed]="currentStep === 'otp'"></div>
+  <div class="step" [class.active]="currentStep === 'otp'">
+    <span>2</span>
+    <small>Verify & Details</small>
+  </div>
+</div>
+
+  </div>
+
+  <!-- Content -->
+  <div class="content-wrapper">
+    <!-- Main Section -->
+    <div class="main-section">
+      <!-- Loading State -->
+      <div class="booking-loading" *ngIf="isLoadingBooking">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+        </div>
+        <h4>Loading booking details...</h4>
+        <p>Please wait</p>
+      </div>
+
+      <!-- Error State -->
+      <div class="booking-error" *ngIf="bookingError && !isLoadingBooking">
+        <div class="error-icon">
+          <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        <h4>Unable to load booking</h4>
+        <p>{{ bookingError }}</p>
+        <button class="btn-retry" (click)="loadBookingDetails()">
+          <i class="bi bi-arrow-clockwise"></i>
+          Try Again
+        </button>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content" *ngIf="!isLoadingBooking && !bookingError">
+        
+        <!-- STEP 1: Mobile Number -->
+        <div class="step-wrapper" *ngIf="currentStep === 'mobile'">
+          <div class="step-header">
+            <div class="step-icon">
+              <i class="bi bi-phone"></i>
+            </div>
+            <div class="step-text">
+              <h2>Enter Mobile Number</h2>
+              <p>We'll send you an OTP to verify your identity</p>
+            </div>
+          </div>
+
+          <div class="input-section">
+            <div class="form-field">
+              <label>Mobile Number <span class="required">*</span></label>
+              <div class="mobile-input">
+                <div class="country-code">+91</div>
+                <input 
+                  type="tel" 
+                  [(ngModel)]="mobileNumber"
+                  placeholder="Enter 10-digit mobile number"
+                  maxlength="10"
+                  class="mobile-field"
+                  (keypress)="$event.charCode >= 48 && $event.charCode <= 57 || $event.preventDefault()"
+                />
+              </div>
+            </div>
+
+            <button 
+              class="action-btn"
+              [disabled]="!isValidMobile() || isLoading"
+              (click)="sendOTP()">
+              <span *ngIf="!isLoading">
+                <i class="bi bi-arrow-right-circle"></i>
+                Send OTP
+              </span>
+              <span *ngIf="isLoading">
+                <i class="bi bi-arrow-clockwise spin"></i>
+                Sending OTP...
+              </span>
+            </button>
+
+            <div class="info-notice">
+              <i class="bi bi-info-circle"></i>
+              <p>You'll receive a 4-digit verification code on this number</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: OTP Verification + Passenger Details (Combined) -->
+        <div class="step-wrapper" *ngIf="currentStep === 'otp'">
+          <div class="step-header">
+            <div class="step-icon">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <div class="step-text">
+              <h2>Verify & Complete Details</h2>
+              <p>Code sent to +91 {{mobileNumber}}</p>
+            </div>
+          </div>
+
+          <div class="input-section">
+            <!-- OTP Input -->
+            <div class="form-field otp-field">
+              <label>Enter 4-Digit OTP <span class="required">*</span></label>
+              <div class="otp-inputs">
+                <input 
+                  #otpInput
+                  type="text" 
+                  maxlength="1"
+                  class="otp-digit"
+                  [value]="otp1"
+                  (keyup)="onOtpKeyUp($event, 1)"
+                  (keydown)="onOtpKeyDown($event, 1)"
+                  (paste)="onOtpPaste($event, 1)"
+                  autocomplete="off"
+                  inputmode="numeric"
+                />
+                <input 
+                  #otpInput
+                  type="text" 
+                  maxlength="1"
+                  class="otp-digit"
+                  [value]="otp2"
+                  (keyup)="onOtpKeyUp($event, 2)"
+                  (keydown)="onOtpKeyDown($event, 2)"
+                  (paste)="onOtpPaste($event, 2)"
+                  autocomplete="off"
+                  inputmode="numeric"
+                />
+                <input 
+                  #otpInput
+                  type="text" 
+                  maxlength="1"
+                  class="otp-digit"
+                  [value]="otp3"
+                  (keyup)="onOtpKeyUp($event, 3)"
+                  (keydown)="onOtpKeyDown($event, 3)"
+                  (paste)="onOtpPaste($event, 3)"
+                  autocomplete="off"
+                  inputmode="numeric"
+                />
+                <input 
+                  #otpInput
+                  type="text" 
+                  maxlength="1"
+                  class="otp-digit"
+                  [value]="otp4"
+                  (keyup)="onOtpKeyUp($event, 4)"
+                  (keydown)="onOtpKeyDown($event, 4)"
+                  (paste)="onOtpPaste($event, 4)"
+                  autocomplete="off"
+                  inputmode="numeric"
+                />
+              </div>
+
+              <div class="otp-actions">
+                <button class="link-btn" (click)="changeMobile()">
+                  <i class="bi bi-pencil"></i> Change Number
+                </button>
+                <button class="link-btn" [disabled]="resendTimer > 0" (click)="resendOTP()">
+                  <span *ngIf="resendTimer === 0">
+                    <i class="bi bi-arrow-clockwise"></i> Resend Code
+                  </span>
+                  <span *ngIf="resendTimer > 0">Resend in {{resendTimer}}s</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="form-divider">
+              <span>Passenger Information</span>
+            </div>
+
+            <!-- Full Name -->
+            <div class="form-field">
+              <label>
+                Full Name <span class="required">*</span>
+              </label>
+              <div class="input-with-icon">
+                <i class="bi bi-person"></i>
+                <input 
+                  type="text" 
+                  [(ngModel)]="passengerDetails.name"
+                  placeholder="Enter your full name"
+                  class="text-input"
+                  maxlength="100"
+                  required
+                />
+              </div>
+              <small class="help-text" *ngIf="passengerDetails.name.length < 2 && passengerDetails.name.length > 0">
+                Name must be at least 2 characters
+              </small>
+            </div>
+
+            <!-- Email -->
+            <div class="form-field">
+              <label>
+                Email Address <span class="optional">(Optional)</span>
+              </label>
+              <div class="input-with-icon">
+                <i class="bi bi-envelope"></i>
+                <input 
+                  type="email" 
+                  [(ngModel)]="passengerDetails.email"
+                  placeholder="your@email.com"
+                  class="text-input"
+                  maxlength="100"
+                />
+              </div>
+              <small class="help-text">Booking confirmation will be sent here</small>
+              <small class="help-text error" *ngIf="passengerDetails.email && !isValidEmail(passengerDetails.email)">
+                Please enter a valid email address
+              </small>
+            </div>
+
+            <!-- Additional Remarks -->
+            <div class="form-field">
+              <label>
+                Additional Remarks <span class="optional">(Optional)</span>
+              </label>
+              <div class="input-with-icon textarea-wrapper">
+                <i class="bi bi-chat-dots"></i>
+                <textarea 
+                  [(ngModel)]="passengerDetails.remarks"
+                  placeholder="Any special requests, dietary requirements, or delivery instructions?"
+                  class="text-input textarea"
+                  rows="3"
+                  maxlength="500">
+                </textarea>
+              </div>
+              <small class="help-text">{{ passengerDetails.remarks.length }}/500 characters</small>
+            </div>
+
+            <!-- Location Status -->
+            <div class="location-section">
+              <div class="location-header">
+                <i class="bi bi-geo-alt-fill"></i>
+                <span>Pickup Location</span>
+              </div>
+              
+              <div class="location-status" *ngIf="isGettingLocation">
+                <div class="location-spinner">
+                  <i class="bi bi-arrow-clockwise spin"></i>
+                </div>
+                <span>Detecting your location...</span>
+              </div>
+
+              <div class="location-success" *ngIf="!isGettingLocation && passengerDetails.latitude && passengerDetails.longitude">
+                <i class="bi bi-check-circle-fill"></i>
+                <div class="location-details">
+                  <span class="location-label">Location captured</span>
+                  <small class="location-address" *ngIf="passengerDetails.address">
+                    {{ passengerDetails.address }}
+                  </small>
+                  <small class="location-coords" *ngIf="!passengerDetails.address">
+                    {{ passengerDetails.latitude }}, {{ passengerDetails.longitude }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="location-error" *ngIf="!isGettingLocation && locationError">
+                <i class="bi bi-exclamation-triangle"></i>
+                <div class="error-details">
+                  <span>{{ locationError }}</span>
+                  <button class="retry-location-btn" (click)="getCurrentLocation()">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Retry
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="button-group">
+              <button class="secondary-btn" (click)="changeMobile()">
+                <i class="bi bi-arrow-left"></i>
+                Back
+              </button>
+              <button 
+                class="action-btn primary"
+                [disabled]="!isOTPComplete() || !isDetailsValid() || isLoading"
+                (click)="confirmBooking()">
+                <span *ngIf="!isLoading">
+                  <i class="bi bi-check-circle-fill"></i>
+                  Confirm Booking
+                </span>
+                <span *ngIf="isLoading">
+                  <i class="bi bi-arrow-clockwise spin"></i>
+                  Verifying & Confirming...
+                </span>
+              </button>
+            </div>
+
+            <!-- Security Notice -->
+            <div class="security-notice">
+              <i class="bi bi-shield-check"></i>
+              <p>Your information is secure and will only be used for this booking</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Summary Sidebar -->
+    <div class="order-summary" *ngIf="bookingDetails && !isLoadingBooking">
+      <div class="summary-header">
+        <h3>Order Summary</h3>
+        <div class="header-info">
+          <span class="item-count">
+            <i class="bi bi-bag"></i>
+            {{ getSafeCount() }} items
+          </span>
+        </div>
+      </div>
+      
+      <!-- Route Information -->
+      <div class="booking-info">
+        <div class="route-info">
+          <i class="bi bi-geo-alt"></i>
+          <div class="route-details">
+            <span class="route-text">{{ bookingDetails.startLocation.name }}</span>
+            <i class="bi bi-arrow-right"></i>
+            <span class="route-text">{{ bookingDetails.endLocation.name }}</span>
+          </div>
+        </div>
+        <div class="date-info">
+          <i class="bi bi-calendar3"></i>
+          <span>{{ bookingDetails.departureDate }} at {{ bookingDetails.departureTime }}</span>
+        </div>
+        <div class="bus-info">
+          <i class="bi bi-bus-front"></i>
+          <span>{{ bookingDetails.busName }} ({{ bookingDetails.busNumber }})</span>
+        </div>
+      </div>
+
+      <!-- Order Items -->
+      <div class="order-items-wrapper">
+        <h4 class="section-title">
+          <i class="bi bi-list-ul"></i>
+          Items Ordered
+        </h4>
+        <div class="order-items" *ngIf="bookingItems && bookingItems.length > 0">
+          <div class="order-item" *ngFor="let item of bookingItems">
+            <div class="item-info">
+              <span class="item-name">{{ item.ItemName }}</span>
+              <span class="item-category">{{ item.CategoryName }}</span>
+            </div>
+            <div class="item-pricing">
+              <span class="item-qty">×{{ item.Quantity }}</span>
+              <span class="item-price">
+                ₹{{ formatCurrency((item.DiscountedPrice || item.Price) * item.Quantity) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Promo Code Section -->
+      <div class="promo-code-section">
+        <div class="promo-code-header">
+          <h4>
+            <i class="bi bi-percent"></i>
+            Apply Promo Code
+          </h4>
+          <button 
+            class="promo-toggle-btn" 
+            (click)="togglePromoCodeInput()" 
+            *ngIf="!promoCodeState.isApplied">
+            <i [class]="showPromoCodeInput ? 'bi bi-dash' : 'bi bi-plus'"></i>
+          </button>
+        </div>
+
+        <!-- Applied Promo Code -->
+        <div class="applied-promo" *ngIf="promoCodeState.isApplied">
+          <div class="promo-badge">
+            <i class="bi bi-check-circle-fill"></i>
+            <div class="promo-info">
+              <span class="promo-code">{{ promoCodeState.code }}</span>
+              <span class="promo-title">{{ promoCodeState.promoTitle }}</span>
+            </div>
+          </div>
+          <div class="promo-savings">
+            <span class="savings-label">You saved</span>
+            <span class="discount-amount">₹{{ formatCurrency(promoCodeState.discountAmount) }}</span>
+          </div>
+          <button class="remove-promo-btn" (click)="removePromoCode()" title="Remove promo code">
+            <i class="bi bi-x-circle"></i>
+          </button>
+        </div>
+
+        <!-- Promo Code Input -->
+        <div class="promo-input-section" *ngIf="showPromoCodeInput && !promoCodeState.isApplied">
+          <div class="promo-input-group">
+            <input 
+              type="text" 
+              [(ngModel)]="promoCodeState.code"
+              placeholder="Enter promo code"
+              class="promo-input"
+              (input)="validatePromoCode()"
+              [disabled]="promoCodeState.isValidating"
+            />
+            <button 
+              class="apply-promo-btn" 
+              (click)="applyPromoCode()"
+              [disabled]="promoCodeState.isValidating || !promoCodeState.code.trim()">
+              <span *ngIf="!promoCodeState.isValidating">Apply</span>
+              <i *ngIf="promoCodeState.isValidating" class="bi bi-arrow-clockwise spin"></i>
+            </button>
+          </div>
+
+          <!-- Validation Message -->
+          <div class="promo-validation" *ngIf="promoCodeState.validationMessage">
+            <small 
+              [class.success]="!promoCodeState.validationMessage.toLowerCase().includes('invalid')" 
+              [class.error]="promoCodeState.validationMessage.toLowerCase().includes('invalid')">
+              <i [class]="promoCodeState.validationMessage.toLowerCase().includes('invalid') ? 'bi bi-x-circle' : 'bi bi-check-circle'"></i>
+              {{ promoCodeState.validationMessage }}
+            </small>
+          </div>
+
+          <!-- Available Promo Codes -->
+          <div class="available-promos" *ngIf="availablePromoCodes.length > 0">
+            <button class="show-available-btn" (click)="toggleAvailablePromoCodes()">
+              <i [class]="showAvailablePromoCodes ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></i>
+              {{ showAvailablePromoCodes ? 'Hide' : 'View' }} Available Codes ({{ availablePromoCodes.length }})
+            </button>
+
+            <div class="promo-list" *ngIf="showAvailablePromoCodes">
+              <div class="promo-card" *ngFor="let promo of availablePromoCodes" (click)="selectPromoCode(promo)">
+                <div class="promo-card-header">
+                  <span class="promo-code-badge">{{ promo.code }}</span>
+                  <span class="promo-discount">
+                    {{ promo.discountType === 'Percentage' ? promo.discountValue + '%' : '₹' + promo.discountValue }} OFF
+                  </span>
+                </div>
+                <div class="promo-card-body">
+                  <p class="promo-title">{{ promo.title }}</p>
+                  <p class="promo-description">{{ promo.description }}</p>
+                  <small class="promo-validity">Valid until {{ promo.validUntil | date:'dd MMM yyyy' }}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Amount Breakdown -->
+      <div class="summary-breakdown">
+        <h4 class="section-title">Bill Details</h4>
+        
+        <div class="breakdown-row">
+          <span>Item Total</span>
+          <span>₹{{ formatCurrency(subtotal) }}</span>
+        </div>
+        
+        <div class="breakdown-row" *ngIf="taxSettings.taxEnabled && cgstAmount > 0">
+          <span>
+            <i class="bi bi-info-circle" title="Central Goods and Services Tax"></i>
+            CGST ({{ taxSettings.cgstRate }}%)
+          </span>
+          <span>₹{{ formatCurrency(cgstAmount) }}</span>
+        </div>
+        
+        <div class="breakdown-row" *ngIf="taxSettings.taxEnabled && sgstAmount > 0">
+          <span>
+            <i class="bi bi-info-circle" title="State Goods and Services Tax"></i>
+            SGST ({{ taxSettings.sgstRate }}%)
+          </span>
+          <span>₹{{ formatCurrency(sgstAmount) }}</span>
+        </div>
+
+        <div class="breakdown-row" *ngIf="deliveryFeeSettings.enabled">
+          <span>
+            Delivery Fee
+            <small *ngIf="isFreeDelivery()" class="free-tag">FREE</small>
+          </span>
+          <span [class.strikethrough]="isFreeDelivery()">
+            ₹{{ formatCurrency(deliveryFee) }}
+          </span>
+        </div>
+
+        <div class="breakdown-divider"></div>
+
+        <div class="breakdown-row subtotal">
+          <span>Subtotal</span>
+          <span>₹{{ formatCurrency(originalTotalAmount) }}</span>
+        </div>
+
+        <div class="breakdown-row discount" *ngIf="promoCodeState.isApplied && promoCodeState.discountAmount > 0">
+          <span>
+            <i class="bi bi-tag-fill"></i>
+            Promo Discount ({{ promoCodeState.code }})
+          </span>
+          <span class="discount-value">-₹{{ formatCurrency(promoCodeState.discountAmount) }}</span>
+        </div>
+        
+        <div class="breakdown-divider"></div>
+
+        <div class="breakdown-row total">
+          <span>
+            <strong>Total to Pay</strong>
+          </span>
+          <span>
+            <strong>₹{{ formatCurrency(getFinalTotal()) }}</strong>
+          </span>
+        </div>
+
+        <div class="savings-badge" *ngIf="promoCodeState.isApplied && promoCodeState.discountAmount > 0">
+          <i class="bi bi-piggy-bank"></i>
+          <span>You're saving ₹{{ formatCurrency(promoCodeState.discountAmount) }} on this order!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

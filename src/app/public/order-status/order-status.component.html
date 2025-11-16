@@ -1,0 +1,334 @@
+<div class="status-container">
+  <!-- Loading State -->
+  <div class="content-area" *ngIf="isLoading">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading order status...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div class="content-area" *ngIf="loadError && !isLoading">
+    <div class="error-state">
+      <i class="bi bi-exclamation-circle"></i>
+      <h3>Unable to load order</h3>
+      <p>{{ loadError }}</p>
+      <button (click)="retryLoad()">
+        <i class="bi bi-arrow-clockwise"></i> Retry
+      </button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <ng-container *ngIf="!isLoading && !loadError">
+    <!-- Fixed Header -->
+    <div class="header">
+      <button class="back-btn" (click)="goBack()">
+        <i class="bi bi-arrow-left"></i>
+      </button>
+      <div class="header-content">
+        <h1>Track Order</h1>
+        <div class="header-actions">
+          <div class="status-badge" [ngClass]="getStatusColor(currentStatus)">
+            <i class="bi bi-check-circle-fill tick-icon" *ngIf="isStatusCompleted()"></i>
+            <i class="bi bi-x-circle-fill" *ngIf="isStatusCanceled() || isStatusRejected()"></i>
+            <span>{{ getStatusText(currentStatus) }}</span>
+          </div>
+          <button class="refresh-btn" 
+                  [class.refreshing]="isRefreshing" 
+                  (click)="refreshStatus()"
+                  [disabled]="isRefreshing">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scrollable Content -->
+    <div class="content-area">
+      <!-- Order Info Card -->
+      <div class="order-info-card">
+        <div class="order-details">
+          <div class="order-id">
+            <i class="bi bi-receipt"></i>
+            <div>
+              <span class="label">Order ID</span>
+              <span class="value">#{{ orderId }}</span>
+            </div>
+          </div>
+          <div class="restaurant-details">
+            <i class="bi bi-bus-front"></i>
+            <div>
+              <h3>{{ busName }}</h3>
+              <p>{{ startLocation }} → {{ endLocation }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Canceled Message -->
+      <div class="cancel-card" *ngIf="isStatusCanceled()">
+        <div class="cancel-content">
+          <div class="cancel-icon">
+            <i class="bi bi-x-circle-fill"></i>
+          </div>
+          <div class="cancel-text">
+            <h4>Order Canceled</h4>
+            <p *ngIf="cancelReason">Reason: {{ cancelReason }}</p>
+            <p *ngIf="!cancelReason">This order has been canceled.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rejected Message -->
+      <div class="reject-card" *ngIf="isStatusRejected()">
+        <div class="reject-content">
+          <div class="reject-icon">
+            <i class="bi bi-x-octagon-fill"></i>
+          </div>
+          <div class="reject-text">
+            <h4>Order Rejected</h4>
+            <p *ngIf="rejectReason">Reason: {{ rejectReason }}</p>
+            <p *ngIf="!rejectReason">Unfortunately, this order was rejected.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Tracker (hide if canceled/rejected/completed) -->
+      <div class="progress-card" *ngIf="!isStatusCanceled() && !isStatusRejected() && !isStatusCompleted()">
+        <h4><i class="bi bi-list-check"></i> Order Progress</h4>
+        <div class="progress-steps">
+          <div class="progress-step" 
+               *ngFor="let step of orderSteps; let i = index"
+               [ngClass]="{
+                 'completed': step.status === 'completed',
+                 'active': step.status === 'active',
+                 'pending': step.status === 'pending'
+               }">
+            
+            <div class="step-indicator">
+              <div class="step-icon">
+                <i [class]="step.icon" *ngIf="step.status !== 'completed'"></i>
+                <i class="bi bi-check-lg" *ngIf="step.status === 'completed'"></i>
+              </div>
+              <div class="step-line" *ngIf="i < orderSteps.length - 1"></div>
+            </div>
+            
+            <div class="step-content">
+              <div class="step-header">
+                <h5>{{ step.title }}</h5>
+                <span class="step-time" *ngIf="step.time">{{ step.time }}</span>
+              </div>
+              <p>{{ step.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delivery Person Card -->
+      <div class="delivery-person-card" *ngIf="hasDeliveryPerson() && currentStatus === 'ready' && !isStatusCanceled() && !isStatusRejected()">
+        <div class="delivery-header">
+          <h4><i class="bi bi-person-check-fill"></i> Delivery Person</h4>
+          <!-- <span class="assigned-badge" *ngIf="assignedAt">
+            <i class="bi bi-clock"></i> Assigned {{ getFormattedAssignedTime() }}
+          </span> -->
+        </div>
+        
+        <div class="delivery-info">
+          <div class="delivery-person-details">
+            <div class="person-avatar">
+              <i class="bi bi-person-circle"></i>
+            </div>
+            <div class="person-info">
+              <h5>{{ deliveryPersonName }}</h5>
+              <p class="person-phone">
+                <i class="bi bi-telephone-fill"></i>
+                {{ deliveryPersonPhone }}
+              </p>
+            </div>
+          </div>
+          
+          <button class="call-delivery-btn" (click)="callDeliveryPerson()">
+            <i class="bi bi-telephone-fill"></i>
+            Call
+          </button>
+        </div>
+        
+        <div class="delivery-status-message" *ngIf="currentStatus === 'ready'">
+          <i class="bi bi-info-circle-fill"></i>
+          <span>Your order is ready and will be delivered soon</span>
+        </div>
+      </div>
+
+      <!-- Location Card -->
+      <div class="location-card" *ngIf="(currentStatus === 'ready' || currentStatus === 'preparing') && !isStatusCanceled() && !isStatusRejected()">
+        <div class="location-header">
+          <h4><i class="bi bi-geo-alt"></i> Your Location</h4>
+          <button class="location-refresh-btn" (click)="updateLocation()">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+        
+        <div class="location-info">
+          <div class="current-location">
+            <span class="location-text">{{ userCurrentLocation }}</span>
+            <span class="distance-badge" *ngIf="distanceToStop">{{ distanceToStop }} away</span>
+          </div>
+          
+          <div class="eta-info" *ngIf="estimatedArrival">
+            <i class="bi bi-bus-front"></i>
+            <span>ETA at {{ stopName }}: <strong>{{ estimatedArrival }}</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Completion Message -->
+      <div class="completion-card" *ngIf="isStatusCompleted()">
+        <div class="completion-content">
+          <div class="completion-icon">
+            <i class="bi bi-check-circle-fill"></i>
+          </div>
+          <div class="completion-text">
+            <h4>Order Completed Successfully!</h4>
+            <p>Thank you for using our service. We hope you enjoyed your meal!</p>
+            <p class="delivery-person-name" *ngIf="hasDeliveryPerson()">
+              <i class="bi bi-person-check-fill"></i>
+              Delivered by <strong>{{ deliveryPersonName }}</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback Card -->
+      <div class="feedback-card" *ngIf="isStatusCompleted()">
+        <div class="feedback-header">
+          <h4><i class="bi bi-star-fill"></i> Rate Your Experience</h4>
+          <p>Help us improve our service</p>
+        </div>
+
+        <!-- Already Rated Message -->
+        <div class="feedback-success" *ngIf="feedbackSubmitted">
+          <i class="bi bi-check-circle-fill"></i>
+          Thank you for your feedback!
+        </div>
+
+        <!-- Rating Form (hide if already submitted) -->
+        <ng-container *ngIf="!feedbackSubmitted">
+          <div class="rating-section">
+            <div class="rating-category">
+              <label>Food Quality</label>
+              <div class="star-rating">
+                <i class="bi bi-star-fill" *ngFor="let star of [1,2,3,4,5]" 
+                   [class.selected]="foodRating >= star"
+                   (click)="setFoodRating(star)"></i>
+              </div>
+            </div>
+            
+            <div class="rating-category">
+              <label>Delivery Service</label>
+              <div class="star-rating">
+                <i class="bi bi-star-fill" *ngFor="let star of [1,2,3,4,5]" 
+                   [class.selected]="deliveryRating >= star"
+                   (click)="setDeliveryRating(star)"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="feedback-input">
+            <label for="feedbackText">Additional Comments (Optional)</label>
+            <textarea 
+              id="feedbackText"
+              [(ngModel)]="feedbackText"
+              placeholder="Share your experience with us..."
+              rows="3"
+              maxlength="500"></textarea>
+            <span class="char-count">{{ feedbackText.length }}/500</span>
+          </div>
+          
+          <button class="submit-feedback-btn" 
+                  (click)="submitFeedback()"
+                  [disabled]="isSubmittingFeedback || (foodRating === 0 && deliveryRating === 0)">
+            <span *ngIf="!isSubmittingFeedback">
+              <i class="bi bi-send-fill"></i>
+              Submit Feedback
+            </span>
+            <span *ngIf="isSubmittingFeedback">
+              <span class="spinner-border spinner-border-sm me-2"></span>
+              Submitting...
+            </span>
+          </button>
+        </ng-container>
+      </div>
+
+      <!-- Order Summary -->
+    <!-- Order Summary with Complete Breakdown -->
+<div class="summary-card">
+  <h4><i class="bi bi-bag"></i> Order Summary</h4>
+  
+  <!-- Order Items -->
+  <div class="order-items-mini">
+    <div class="item-mini" *ngFor="let item of orderItems">
+      <span class="item-name">{{ item.name }}</span>
+      <span class="item-qty-price">×{{ item.quantity }} • ₹{{ formatCurrency(item.price) }}</span>
+    </div>
+  </div>
+  
+  <!-- Amount Breakdown -->
+  <div class="amount-breakdown">
+    <!-- Subtotal -->
+    <div class="breakdown-row">
+      <span>Subtotal</span>
+      <span>₹{{ formatCurrency(subtotal) }}</span>
+    </div>
+    
+    <!-- Tax Breakdown -->
+    <div class="breakdown-row" *ngIf="hasTax()">
+      <span>CGST (9%)</span>
+      <span>₹{{ formatCurrency(cgst) }}</span>
+    </div>
+    <div class="breakdown-row" *ngIf="hasTax()">
+      <span>SGST (9%)</span>
+      <span>₹{{ formatCurrency(sgst) }}</span>
+    </div>
+    
+    <!-- Delivery Fee -->
+    <div class="breakdown-row" *ngIf="hasDeliveryFee()">
+      <span>Delivery Fee</span>
+      <span>₹{{ formatCurrency(deliveryFee) }}</span>
+    </div>
+    
+    <!-- Promo Discount -->
+    <div class="breakdown-row discount" *ngIf="hasDiscount()">
+      <span>
+        <i class="bi bi-percent"></i>
+        Discount ({{ promoCode }})
+      </span>
+      <span class="discount-value">-₹{{ formatCurrency(discountAmount) }}</span>
+    </div>
+    
+    <!-- Total -->
+    <div class="breakdown-row total">
+      <span>Total Amount</span>
+      <span class="total-amount">₹{{ formatCurrency(totalAmount) }}</span>
+    </div>
+  </div>
+</div>
+
+
+      <!-- Help Section -->
+      <div class="help-card">
+        <h4><i class="bi bi-question-circle"></i> Need Help?</h4>
+        <div class="help-buttons">
+          <button class="help-btn" (click)="callRestaurant()">
+            <i class="bi bi-telephone"></i>
+            <span>Call Support</span>
+          </button>
+          <button class="help-btn" (click)="reportIssue()">
+            <i class="bi bi-chat-dots"></i>
+            <span>Report Issue</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

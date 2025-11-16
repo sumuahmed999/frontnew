@@ -1,0 +1,716 @@
+<!-- src/app/components/recent-orders/recent-orders.component.html -->
+<div class="content-card orders-card">
+  <div class="card-header">
+    <div class="header-left">
+      <h5 class="card-title">
+        <i class="bi bi-clock-history me-2"></i> Recent Orders
+        <span class="badge bg-primary ms-2" *ngIf="pendingCount > 0">
+          {{ pendingCount }}
+        </span>
+      </h5>
+    </div>
+    <div class="header-right">
+      <!-- Search Bar -->
+      <div class="search-container me-3">
+        <input type="text" 
+               class="form-control form-control-sm search-input"
+               placeholder="Search by order, passenger, bus..."
+               [(ngModel)]="searchQuery"
+               (input)="onSearchChange()">
+        <i class="bi bi-search search-icon"></i>
+      </div>
+
+      <!-- View Toggle -->
+      <div class="view-toggle btn-group" role="group">
+        <button type="button" 
+                class="btn btn-sm btn-outline-secondary"
+                [class.active]="viewMode === 'list'"
+                (click)="viewMode = 'list'"
+                title="List View">
+          <i class="bi bi-list-ul"></i>
+        </button>
+        <button type="button" 
+                class="btn btn-sm btn-outline-secondary"
+                [class.active]="viewMode === 'card'"
+                (click)="viewMode = 'card'"
+                title="Card View">
+          <i class="bi bi-grid-3x3-gap"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="card-body">
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <span class="ms-2">Loading orders...</span>
+    </div>
+
+    <!-- No Results -->
+    <div class="no-data-state" *ngIf="!isLoading && filteredOrders.length === 0">
+      <i class="bi bi-search"></i>
+      <p>No orders found</p>
+      <small class="text-muted" *ngIf="searchQuery">
+        Try adjusting your search criteria
+      </small>
+      <small class="text-muted" *ngIf="!searchQuery">
+        Orders from today and yesterday will appear here
+      </small>
+    </div>
+
+    <!-- LIST VIEW -->
+    <div class="orders-list-view" *ngIf="!isLoading && filteredOrders.length > 0 && viewMode === 'list'">
+      <div class="order-list-item" *ngFor="let order of filteredOrders" [class.updating]="order.isUpdating">
+        <!-- Status Badge -->
+        <div class="order-status-badge" [class]="getStatusClass(order.status)">
+          <i class="bi" [class]="getStatusIcon(order.status)"></i>
+        </div>
+
+        <!-- Order Info -->
+        <div class="order-info-section" (click)="openOrderDetailsModal(order)" style="cursor: pointer;">
+          <div class="order-header">
+            <h6 class="order-id">#{{ order.id }}</h6>
+            <span class="order-time">{{ order.time }}</span>
+          </div>
+          <p class="order-passenger">{{ order.passengerName }}</p>
+          <div class="order-details">
+            <span class="bus-info"><i class="bi bi-bus-front-fill me-1"></i>{{ order.busNumber }}</span>
+            <span class="items-count clickable"><i class="bi bi-basket me-1"></i>{{ order.items }} items</span>
+            <span class="order-amount">{{ formatCurrency(order.amount) }}</span>
+          </div>
+        </div>
+
+        <!-- Status Badge -->
+        <span class="status-label-badge" [class]="'badge-' + order.status">
+          {{ order.status }}
+        </span>
+
+        <!-- Actions -->
+        <div class="order-actions">
+          <!-- View Location Button -->
+          <button *ngIf="showLocationButton && canViewLocation(order)"
+                  class="btn btn-sm btn-outline-success me-2" 
+                  type="button"
+                  (click)="onViewLocation(order)"
+                  title="View user location">
+            <i class="bi bi-geo-alt-fill me-1"></i>
+            Location
+          </button>
+
+          <button class="btn btn-sm btn-outline-primary update-btn" 
+                  type="button"
+                  (click)="openStatusModal(order)"
+                  [disabled]="order.isUpdating">
+            <i class="bi bi-arrow-repeat me-1"></i>
+            Update
+          </button>
+
+          <!-- Updating Spinner -->
+          <div class="update-spinner" *ngIf="order.isUpdating">
+            <div class="spinner-border spinner-border-sm" role="status"></div>
+          </div>
+
+          <!-- Error Message -->
+          <div class="update-error-small" *ngIf="order.errorMessage">
+            <i class="bi bi-exclamation-circle text-danger" 
+               [title]="order.errorMessage"
+               style="cursor: help;"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD VIEW -->
+    <div class="orders-card-view" *ngIf="!isLoading && filteredOrders.length > 0 && viewMode === 'card'">
+      <div class="order-card" *ngFor="let order of filteredOrders" [class.updating]="order.isUpdating">
+        <!-- Card Header -->
+        <div class="card-header-section">
+          <div class="status-indicator" [class]="getStatusClass(order.status)">
+            <i class="bi" [class]="getStatusIcon(order.status)"></i>
+          </div>
+          <h6 class="order-id-card">#{{ order.id }}</h6>
+          <span class="time-badge">{{ order.time }}</span>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-content" (click)="openOrderDetailsModal(order)" style="cursor: pointer;">
+          <p class="passenger-name">{{ order.passengerName }}</p>
+          
+          <div class="order-details-card">
+            <div class="detail-item">
+              <img src="assets/logo_compact2.png" alt="BusFood" height="60px"/>
+              <span>{{ order.busNumber }}</span>
+            </div>
+            <div class="detail-item clickable">
+              <i class="bi bi-basket"></i>
+              <span>{{ order.items }} items</span>
+            </div>
+          </div>
+
+          <div class="amount-section">
+            <span class="label">Total</span>
+            <span class="amount">{{ formatCurrency(order.amount) }}</span>
+          </div>
+
+          <div class="status-section">
+            <span class="status-badge" [class]="'badge-' + order.status">
+              {{ order.status }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="card-footer-section">
+          <!-- View Location Button (Card View) -->
+          <button *ngIf="showLocationButton && canViewLocation(order)"
+                  class="btn btn-sm btn-success w-100 mb-2" 
+                  type="button"
+                  (click)="onViewLocation(order)"
+                  title="View user location">
+            <i class="bi bi-geo-alt-fill me-1"></i>
+            View Location
+          </button>
+
+          <button class="btn btn-sm btn-primary w-100" 
+                  type="button"
+                  (click)="openStatusModal(order)"
+                  [disabled]="order.isUpdating">
+            <i class="bi bi-arrow-repeat me-1"></i>
+            Update Status
+          </button>
+
+          <!-- Updating Spinner -->
+          <div class="update-spinner-card" *ngIf="order.isUpdating">
+            <div class="spinner-border spinner-border-sm" role="status"></div>
+            <span>Updating...</span>
+          </div>
+
+          <!-- Error Message -->
+          <div class="error-banner-card" *ngIf="order.errorMessage">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>{{ order.errorMessage }}</span>
+            <button class="btn-close-small" (click)="clearError(order)">×</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Status Update Modal Backdrop -->
+<div class="modal-backdrop" *ngIf="showStatusModal" (click)="closeStatusModal()"></div>
+
+<!-- Status Update Modal -->
+<div class="status-modal" *ngIf="showStatusModal">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        <i class="bi bi-arrow-repeat"></i>
+        Update Order Status
+      </h5>
+      <button class="btn-close" type="button" (click)="closeStatusModal()" [disabled]="isUpdatingStatus"></button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Error Message -->
+      <div class="alert alert-danger" *ngIf="statusUpdateError">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        {{ statusUpdateError }}
+      </div>
+
+      <!-- Order Summary -->
+      <div class="order-summary-modal">
+        <div class="summary-row">
+          <span class="label">Order ID:</span>
+          <span class="value">#{{ currentOrderForStatus?.id }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="label">Passenger:</span>
+          <span class="value">{{ currentOrderForStatus?.passengerName }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="label">Bus:</span>
+          <span class="value">{{ currentOrderForStatus?.busNumber }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="label">Amount:</span>
+          <span class="value">{{ formatCurrency(currentOrderForStatus?.amount || 0) }}</span>
+        </div>
+        <div class="summary-row current-status">
+          <span class="label">Current Status:</span>
+          <span class="status-badge" [class]="'badge-' + currentOrderForStatus?.status">
+            {{ currentOrderForStatus?.status }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Status Options -->
+      <div class="status-options">
+        <h6 class="section-title">Select New Status</h6>
+        
+        <div class="status-grid">
+          <!-- Confirmed -->
+          <button *ngIf="canTransitionTo(currentOrderForStatus?.status, 'confirmed')"
+                  type="button"
+                  class="status-option confirmed"
+                  (click)="selectStatus('confirmed')"
+                  [class.selected]="selectedStatus === 'confirmed'"
+                  [disabled]="isUpdatingStatus">
+            <div class="icon-wrapper">
+              <i class="bi bi-check-circle"></i>
+            </div>
+            <span class="status-name">Confirmed</span>
+            <p class="status-desc">Accept and confirm order</p>
+          </button>
+
+          <!-- Preparing -->
+          <button *ngIf="canTransitionTo(currentOrderForStatus?.status, 'preparing')"
+                  type="button"
+                  class="status-option preparing"
+                  (click)="selectStatus('preparing')"
+                  [class.selected]="selectedStatus === 'preparing'"
+                  [disabled]="isUpdatingStatus">
+            <div class="icon-wrapper">
+              <i class="bi bi-fire"></i>
+            </div>
+            <span class="status-name">Preparing</span>
+            <p class="status-desc">Order is being prepared</p>
+          </button>
+
+          <!-- Ready -->
+          <button *ngIf="canTransitionTo(currentOrderForStatus?.status, 'ready')"
+                  type="button"
+                  class="status-option ready"
+                  (click)="selectStatus('ready')"
+                  [class.selected]="selectedStatus === 'ready'"
+                  [disabled]="isUpdatingStatus">
+            <div class="icon-wrapper">
+              <i class="bi bi-box-seam"></i>
+            </div>
+            <span class="status-name">Ready</span>
+            <p class="status-desc">Order ready for pickup</p>
+          </button>
+
+          <!-- Completed -->
+          <button *ngIf="canTransitionTo(currentOrderForStatus?.status, 'completed')"
+                  type="button"
+                  class="status-option completed"
+                  (click)="selectStatus('completed')"
+                  [class.selected]="selectedStatus === 'completed'"
+                  [disabled]="isUpdatingStatus">
+            <div class="icon-wrapper">
+              <i class="bi bi-check2-all"></i>
+            </div>
+            <span class="status-name">Completed</span>
+            <p class="status-desc">Order delivered</p>
+          </button>
+
+          <!-- Rejected -->
+          <button *ngIf="canTransitionTo(currentOrderForStatus?.status, 'rejected')"
+                  type="button"
+                  class="status-option rejected"
+                  (click)="selectStatus('rejected')"
+                  [class.selected]="selectedStatus === 'rejected'"
+                  [disabled]="isUpdatingStatus">
+            <div class="icon-wrapper">
+              <i class="bi bi-x-octagon"></i>
+            </div>
+            <span class="status-name">Rejected</span>
+            <p class="status-desc">Decline this order</p>
+          </button>
+
+          <!-- Canceled -->
+          <button *ngIf="canTransitionTo(currentOrderForStatus?.status, 'canceled')"
+                  type="button"
+                  class="status-option canceled"
+                  (click)="selectStatus('canceled')"
+                  [class.selected]="selectedStatus === 'canceled'"
+                  [disabled]="isUpdatingStatus">
+            <div class="icon-wrapper">
+              <i class="bi bi-x-circle"></i>
+            </div>
+            <span class="status-name">Canceled</span>
+            <p class="status-desc">Cancel this order</p>
+          </button>
+        </div>
+      </div>
+
+      <!-- Reason Input (for reject/cancel) -->
+      <div class="reason-section" *ngIf="selectedStatus === 'rejected' || selectedStatus === 'canceled'">
+        <label for="statusReason" class="form-label">
+          Reason for {{ selectedStatus === 'rejected' ? 'Rejection' : 'Cancellation' }}
+          <span class="text-danger">*</span>
+        </label>
+        <textarea 
+          class="form-control" 
+          id="statusReason"
+          [(ngModel)]="statusReason"
+          placeholder="Please provide a reason (minimum 10 characters)..."
+          rows="3"
+          [class.is-invalid]="showReasonError"></textarea>
+        <div class="invalid-feedback" *ngIf="showReasonError">
+          Reason is required and must be at least 10 characters
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button 
+        type="button" 
+        class="btn btn-secondary" 
+        (click)="closeStatusModal()"
+        [disabled]="isUpdatingStatus">
+        Cancel
+      </button>
+      <button 
+        type="button" 
+        class="btn btn-primary" 
+        (click)="confirmStatusUpdate()"
+        [disabled]="isUpdatingStatus || !selectedStatus">
+        <span *ngIf="!isUpdatingStatus">
+          <i class="bi bi-check-circle me-1"></i>
+          Update Status
+        </span>
+        <span *ngIf="isUpdatingStatus">
+          <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+          Updating...
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delivery Modal Backdrop -->
+<div class="modal-backdrop delivery-backdrop" *ngIf="showDeliveryModal" (click)="closeDeliveryModal()"></div>
+
+<!-- Delivery Modal -->
+<div class="delivery-modal" *ngIf="showDeliveryModal">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        <i class="bi bi-person-check"></i>
+        Assign Delivery Person
+      </h5>
+      <button class="btn-close" type="button" (click)="closeDeliveryModal()" [disabled]="isSubmittingDelivery"></button>
+    </div>
+
+    <div class="modal-body">
+      <form [formGroup]="deliveryForm" (ngSubmit)="submitDeliveryForm()">
+        <!-- Error Message -->
+        <div class="alert alert-danger" *ngIf="deliveryError">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          {{ deliveryError }}
+        </div>
+
+        <!-- Order Info -->
+        <div class="order-summary">
+          <div class="summary-item">
+            <span class="label">Order ID:</span>
+            <span class="value">#{{ currentOrderForDelivery?.id }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Passenger:</span>
+            <span class="value">{{ currentOrderForDelivery?.passengerName }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Amount:</span>
+            <span class="value">{{ formatCurrency(currentOrderForDelivery?.amount || 0) }}</span>
+          </div>
+        </div>
+
+        <!-- Delivery Person ID -->
+        <div class="form-group">
+          <label for="deliveryPersonId" class="form-label">
+            Delivery Person ID
+            <span class="text-danger">*</span>
+          </label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="deliveryPersonId"
+            formControlName="deliveryPersonId"
+            placeholder="e.g., DP-001"
+            [class.is-invalid]="isFieldInvalid('deliveryPersonId')">
+          <div class="invalid-feedback" *ngIf="isFieldInvalid('deliveryPersonId')">
+            Delivery person ID is required (min 2 characters)
+          </div>
+        </div>
+
+        <!-- Delivery Person Name -->
+        <div class="form-group">
+          <label for="deliveryPersonName" class="form-label">
+            Delivery Person Name
+            <span class="text-danger">*</span>
+          </label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="deliveryPersonName"
+            formControlName="deliveryPersonName"
+            placeholder="Enter full name"
+            [class.is-invalid]="isFieldInvalid('deliveryPersonName')">
+          <div class="invalid-feedback" *ngIf="isFieldInvalid('deliveryPersonName')">
+            Delivery person name is required (min 3 characters)
+          </div>
+        </div>
+
+        <!-- Delivery Person Phone -->
+        <div class="form-group">
+          <label for="deliveryPersonPhone" class="form-label">
+            Delivery Person Phone
+            <span class="text-danger">*</span>
+          </label>
+          <input 
+            type="tel" 
+            class="form-control" 
+            id="deliveryPersonPhone"
+            formControlName="deliveryPersonPhone"
+            placeholder="e.g., 9876543210"
+            [class.is-invalid]="isFieldInvalid('deliveryPersonPhone')">
+          <div class="invalid-feedback" *ngIf="isFieldInvalid('deliveryPersonPhone')">
+            Valid 10-digit phone number is required
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button 
+        type="button" 
+        class="btn btn-secondary" 
+        (click)="closeDeliveryModal()"
+        [disabled]="isSubmittingDelivery">
+        Cancel
+      </button>
+      <button 
+        type="button" 
+        class="btn btn-primary" 
+        (click)="submitDeliveryForm()"
+        [disabled]="isSubmittingDelivery || !deliveryForm.valid">
+        <span *ngIf="!isSubmittingDelivery">
+          <i class="bi bi-check-circle me-1"></i>
+          Assign & Mark Ready
+        </span>
+        <span *ngIf="isSubmittingDelivery">
+          <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+          Processing...
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Order Details Modal Backdrop -->
+<div class="modal-backdrop" *ngIf="showOrderDetailsModal" (click)="closeOrderDetailsModal()"></div>
+
+<!-- Order Details Modal -->
+<div class="order-details-modal" *ngIf="showOrderDetailsModal">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        <i class="bi bi-receipt me-2"></i>
+        Order Details
+      </h5>
+      <button class="btn-close" (click)="closeOrderDetailsModal()"></button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="isLoadingOrderDetails">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading order details...</p>
+      </div>
+
+      <!-- Error State -->
+      <div class="alert alert-danger" *ngIf="orderDetailsError && !isLoadingOrderDetails">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        {{ orderDetailsError }}
+      </div>
+
+      <!-- Order Details Content -->
+      <div class="order-details-content" *ngIf="currentOrderDetails && !isLoadingOrderDetails">
+        <!-- Order Info Section -->
+        <div class="details-section">
+          <h6 class="section-title">Order Information</h6>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Order Number:</span>
+              <span class="info-value">#{{ currentOrderDetails.bookNumber }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Status:</span>
+              <span class="status-badge" [class]="'badge-' + normalizeStatus(currentOrderDetails.bookingStatus)">
+                {{ currentOrderDetails.bookingStatus }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Payment Status:</span>
+              <span class="payment-badge" [class.paid]="currentOrderDetails.paymentStatus === 'Paid'">
+                {{ currentOrderDetails.paymentStatus }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Created At:</span>
+              <span class="info-value">{{ currentOrderDetails.createdAt | date:'medium' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Passenger Info Section -->
+        <div class="details-section">
+          <h6 class="section-title">Passenger Information</h6>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Name:</span>
+              <span class="info-value">{{ currentOrderDetails.passengerName }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Phone:</span>
+              <span class="info-value">{{ currentOrderDetails.passengerPhone }}</span>
+            </div>
+            <div class="info-item" *ngIf="currentOrderDetails.passengerEmail">
+              <span class="info-label">Email:</span>
+              <span class="info-value">{{ currentOrderDetails.passengerEmail }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Journey Info Section -->
+        <div class="details-section">
+          <h6 class="section-title">Journey Information</h6>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Bus Number:</span>
+              <span class="info-value">{{ currentOrderDetails.busNumber }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Bus Name:</span>
+              <span class="info-value">{{ currentOrderDetails.busName }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">From:</span>
+              <span class="info-value">{{ currentOrderDetails.startLocationName }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">To:</span>
+              <span class="info-value">{{ currentOrderDetails.endLocationName }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Departure:</span>
+              <span class="info-value">{{ currentOrderDetails.departureDate }} {{ currentOrderDetails.departureTime }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Items Section -->
+        <div class="details-section">
+          <h6 class="section-title">Order Items</h6>
+          <div class="items-list">
+            <div class="item-card" *ngFor="let item of currentOrderDetails.bookingItems">
+              <div class="item-header">
+                <div class="item-name">
+                  <i class="bi bi-circle-fill item-bullet"></i>
+                  {{ item.itemName }}
+                </div>
+                <div class="item-price">{{ formatCurrency(item.price * item.quantity) }}</div>
+              </div>
+              <div class="item-details">
+                <span class="item-category">{{ item.categoryName }} • {{ item.subcategoryName }}</span>
+                <span class="item-quantity">Qty: {{ item.quantity }} × {{ formatCurrency(item.price) }}</span>
+              </div>
+              <div class="item-instructions" *ngIf="item.specialInstructions">
+                <i class="bi bi-chat-left-text me-1"></i>
+                <span>{{ item.specialInstructions }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canceled Items (if any) -->
+        <div class="details-section" *ngIf="currentOrderDetails.canceledItems && currentOrderDetails.canceledItems.length > 0">
+          <h6 class="section-title text-danger">Canceled Items</h6>
+          <div class="items-list">
+            <div class="item-card canceled" *ngFor="let item of currentOrderDetails.canceledItems">
+              <div class="item-header">
+                <div class="item-name">
+                  <i class="bi bi-x-circle-fill item-bullet"></i>
+                  {{ item.itemName }}
+                </div>
+                <div class="item-price text-decoration-line-through">{{ formatCurrency(item.price * item.quantity) }}</div>
+              </div>
+              <div class="item-details">
+                <span class="item-category">{{ item.categoryName }} • {{ item.subcategoryName }}</span>
+                <span class="item-quantity">Qty: {{ item.quantity }}</span>
+              </div>
+              <div class="cancellation-reason" *ngIf="item.cancellationReason">
+                <i class="bi bi-info-circle me-1"></i>
+                <span>{{ item.cancellationReason }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing Section -->
+        <div class="details-section pricing-section">
+          <h6 class="section-title">Pricing Details</h6>
+          <div class="pricing-grid">
+            <div class="pricing-row">
+              <span class="pricing-label">Subtotal:</span>
+              <span class="pricing-value">{{ formatCurrency(currentOrderDetails.subtotal) }}</span>
+            </div>
+            <div class="pricing-row">
+              <span class="pricing-label">CGST:</span>
+              <span class="pricing-value">{{ formatCurrency(currentOrderDetails.cgst) }}</span>
+            </div>
+            <div class="pricing-row">
+              <span class="pricing-label">SGST:</span>
+              <span class="pricing-value">{{ formatCurrency(currentOrderDetails.sgst) }}</span>
+            </div>
+            <div class="pricing-row" *ngIf="currentOrderDetails.deliveryFee > 0">
+              <span class="pricing-label">Delivery Fee:</span>
+              <span class="pricing-value">{{ formatCurrency(currentOrderDetails.deliveryFee) }}</span>
+            </div>
+            <div class="pricing-row" *ngIf="currentOrderDetails.discountAmount > 0">
+              <span class="pricing-label text-success">Discount:</span>
+              <span class="pricing-value text-success">-{{ formatCurrency(currentOrderDetails.discountAmount) }}</span>
+            </div>
+            <div class="pricing-row total">
+              <span class="pricing-label">Total Amount:</span>
+              <span class="pricing-value">{{ formatCurrency(currentOrderDetails.totalAmount) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pickup Location (if available) -->
+        <div class="details-section" *ngIf="currentOrderDetails.pickupLocationAddress">
+          <h6 class="section-title">Pickup Location</h6>
+          <div class="location-info">
+            <i class="bi bi-geo-alt-fill me-2"></i>
+            <span>{{ currentOrderDetails.pickupLocationAddress }}</span>
+          </div>
+        </div>
+
+        <!-- Additional Remarks (if any) -->
+        <div class="details-section" *ngIf="currentOrderDetails.additionalRemarks">
+          <h6 class="section-title">Additional Remarks</h6>
+          <div class="remarks-box">
+            <i class="bi bi-chat-square-text me-2"></i>
+            <span>{{ currentOrderDetails.additionalRemarks }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeOrderDetailsModal()">
+        Close
+      </button>
+    </div>
+  </div>
+</div>

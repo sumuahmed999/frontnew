@@ -1,0 +1,323 @@
+<!-- location-master.component.html -->
+<div class="location-management">
+  <!-- Success/Error Messages -->
+  <div *ngIf="successMessage" class="alert alert-success alert-compact mb-3">
+    <i class="bi bi-check-circle me-2"></i>{{ successMessage }}
+    <button type="button" class="btn-close btn-close-sm" (click)="clearMessages()"></button>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger alert-compact mb-3">
+    <i class="bi bi-exclamation-circle me-2"></i>{{ errorMessage }}
+    <button type="button" class="btn-close btn-close-sm" (click)="clearMessages()"></button>
+  </div>
+
+  <!-- Location Form -->
+  <div class="location-form card">
+    <div class="card-header">
+      <h5 class="card-title">
+        <i class="bi bi-geo-alt me-2"></i>
+        {{ editingLocationId ? 'Edit Location' : 'Add New Location' }}
+      </h5>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="locationForm" (ngSubmit)="onSubmit()">
+        <!-- Basic Information Row -->
+        <div class="form-row">
+          <div class="form-col">
+            <label class="form-label-compact">Location Name *</label>
+            <input type="text" formControlName="locationName" class="form-control form-control-compact" [disabled]="isLoading">
+            <div class="error-space">
+              <div *ngIf="locationForm.get('locationName')?.invalid && locationForm.get('locationName')?.touched; else spacer1" 
+                   class="error-text-compact">Location name is required</div>
+              <ng-template #spacer1><div class="error-spacer"></div></ng-template>
+            </div>
+          </div>
+          <div class="form-col">
+            <label class="form-label-compact">Location Prefix *</label>
+            <input type="text" formControlName="locationPrefix" class="form-control form-control-compact" 
+                   [disabled]="isLoading" style="text-transform: uppercase;">
+            <div class="error-space">
+              <div *ngIf="locationForm.get('locationPrefix')?.invalid && locationForm.get('locationPrefix')?.touched; else spacer2" 
+                   class="error-text-compact">Location prefix is required</div>
+              <ng-template #spacer2><div class="error-spacer"></div></ng-template>
+            </div>
+          </div>
+          <div class="form-col">
+            <div class="form-check-compact">
+              <input type="checkbox" formControlName="isActive" class="form-check-input" [disabled]="isLoading">
+              <label class="form-check-label-compact">Active Status</label>
+            </div>
+            <div class="error-space"><div class="error-spacer"></div></div>
+          </div>
+        </div>
+
+        <!-- Address Row with Enhanced Google Places Search -->
+        <div class="form-row">
+          <div class="form-col-full">
+            <label class="form-label-compact">
+              Address 
+              <small class="text-muted">(Start typing to search with Google Places)</small>
+            </label>
+            <div class="input-group">
+              <input #addressInput type="text" formControlName="address" 
+                     class="form-control form-control-compact" [disabled]="isLoading"
+                     placeholder="Search for places, addresses, landmarks..."
+                     (focus)="onAddressFocus()"
+                     (input)="onAddressInput($event)">
+              <button type="button" class="btn btn-outline-secondary btn-compact" 
+                      (click)="getCurrentLocation()" [disabled]="isLoading || isGettingLocation"
+                      title="Use current location">
+                <span *ngIf="isGettingLocation" class="spinner-border spinner-border-sm"></span>
+                <i *ngIf="!isGettingLocation" class="bi bi-crosshair"></i>
+              </button>
+              <button type="button" class="btn btn-outline-primary btn-compact" 
+                      (click)="clearAddress()" [disabled]="isLoading"
+                      title="Clear address">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+            <div class="error-space">
+              <small class="text-muted">
+                Try searching for: restaurants, hotels, landmarks, or enter a complete address
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Location Details Row -->
+        <div class="form-row">
+          <div class="form-col">
+            <label class="form-label-compact">City</label>
+            <input type="text" formControlName="city" class="form-control form-control-compact" [disabled]="isLoading">
+            <div class="error-space"><div class="error-spacer"></div></div>
+          </div>
+          <div class="form-col">
+            <label class="form-label-compact">State</label>
+            <input type="text" formControlName="state" class="form-control form-control-compact" [disabled]="isLoading">
+            <div class="error-space"><div class="error-spacer"></div></div>
+          </div>
+          <div class="form-col">
+            <label class="form-label-compact">Country</label>
+            <input type="text" formControlName="country" class="form-control form-control-compact" [disabled]="isLoading">
+            <div class="error-space"><div class="error-spacer"></div></div>
+          </div>
+          <div class="form-col">
+            <label class="form-label-compact">Postal Code</label>
+            <input type="text" formControlName="postalCode" class="form-control form-control-compact" [disabled]="isLoading">
+            <div class="error-space"><div class="error-spacer"></div></div>
+          </div>
+        </div>
+
+        <!-- Coordinates Row with Map Preview -->
+        <div class="form-row">
+          <div class="form-col">
+            <label class="form-label-compact">Latitude</label>
+            <input type="number" step="0.000001" formControlName="latitude" 
+                   class="form-control form-control-compact" [disabled]="isLoading"
+                   (input)="onCoordinateChange()">
+            <div class="error-space">
+              <div *ngIf="locationForm.get('latitude')?.invalid && locationForm.get('latitude')?.touched; else spacer3" 
+                   class="error-text-compact">Invalid latitude (-90 to 90)</div>
+              <ng-template #spacer3><div class="error-spacer"></div></ng-template>
+            </div>
+          </div>
+          <div class="form-col">
+            <label class="form-label-compact">Longitude</label>
+            <input type="number" step="0.000001" formControlName="longitude" 
+                   class="form-control form-control-compact" [disabled]="isLoading"
+                   (input)="onCoordinateChange()">
+            <div class="error-space">
+              <div *ngIf="locationForm.get('longitude')?.invalid && locationForm.get('longitude')?.touched; else spacer4" 
+                   class="error-text-compact">Invalid longitude (-180 to 180)</div>
+              <ng-template #spacer4><div class="error-spacer"></div></ng-template>
+            </div>
+          </div>
+          <div class="form-col">
+            <label class="form-label-compact">Location Preview</label>
+            <div class="coordinate-preview">
+              <button type="button" class="btn btn-sm btn-outline-info" 
+                      (click)="previewLocation()" 
+                      [disabled]="!hasValidCoordinates()"
+                      title="Preview location on map">
+                <i class="bi bi-map"></i> Preview Map
+              </button>
+            </div>
+          </div>
+          <div class="form-col">
+            <!-- Empty for spacing -->
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-compact" [disabled]="locationForm.invalid || isLoading">
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+            <span *ngIf="isLoading">{{ editingLocationId ? 'Updating...' : 'Saving...' }}</span>
+            <span *ngIf="!isLoading">
+              <i class="bi bi-gear me-1"></i>{{ editingLocationId ? 'Update Location' : 'Save Location' }}
+            </span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-compact ms-2" (click)="resetForm()" [disabled]="isLoading">
+            <i class="bi bi-x-circle me-1"></i>Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Locations List -->
+  <div class="locations-list card mt-4">
+    <div class="card-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="card-title">
+          <i class="bi bi-list me-2"></i>
+          Locations ({{ totalCount }})
+        </h5>
+        
+        <!-- Search and Filter Controls -->
+        <div class="d-flex gap-2">
+          <div class="search-container">
+            <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" 
+                   class="form-control form-control-sm" placeholder="Search locations...">
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="onSearch()">
+              <i class="bi bi-search"></i>
+            </button>
+          </div>
+          
+          <select [(ngModel)]="filterActive" (change)="onSearch()" class="form-select form-select-sm">
+            <option [ngValue]="undefined">All Status</option>
+            <option [ngValue]="true">Active Only</option>
+            <option [ngValue]="false">Inactive Only</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <!-- Loading State -->
+      <div *ngIf="isLoadingLocations" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <div class="mt-2">Loading locations...</div>
+      </div>
+
+      <!-- Locations Table -->
+      <div *ngIf="!isLoadingLocations" class="table-responsive">
+        <table class="table table-hover table-compact">
+          <thead class="table-light">
+            <tr>
+              <th class="sortable" (click)="onSort('LocationName')">
+                Name <i [class]="getSortIcon('LocationName')"></i>
+              </th>
+              <th class="sortable" (click)="onSort('LocationPrefix')">
+                Prefix <i [class]="getSortIcon('LocationPrefix')"></i>
+              </th>
+              <th>Address</th>
+              <th class="sortable" (click)="onSort('City')">
+                City <i [class]="getSortIcon('City')"></i>
+              </th>
+              <th>Coordinates</th>
+              <th class="sortable" (click)="onSort('IsActive')">
+                Status <i [class]="getSortIcon('IsActive')"></i>
+              </th>
+              <th class="sortable" (click)="onSort('CreatedAt')">
+                Created <i [class]="getSortIcon('CreatedAt')"></i>
+              </th>
+              <th width="140">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let location of locations; trackBy: trackByLocationId" 
+                [class.table-warning]="!location.isActive">
+              <td>
+                <strong>{{ location.locationName }}</strong>
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{ location.locationPrefix }}</span>
+              </td>
+              <td>
+                <div class="text-truncate" style="max-width: 200px;" [title]="location.address">
+                  {{ location.address || '-' }}
+                </div>
+              </td>
+              <td>{{ location.city || '-' }}</td>
+              <td>
+                <small *ngIf="location.latitude && location.longitude" class="text-muted">
+                  {{ location.latitude | number:'1.6-6' }}, {{ location.longitude | number:'1.6-6' }}
+                </small>
+                <span *ngIf="!location.latitude || !location.longitude">-</span>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="location.isActive ? 'bg-success' : 'bg-danger'">
+                  <i [class]="location.isActive ? 'bi bi-check-circle' : 'bi bi-x-circle'"></i>
+                  {{ location.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>
+                <small>{{ location.createdAt | date:'short' }}</small>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button type="button" class="btn btn-outline-primary btn-xs" 
+                          (click)="editLocation(location)" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button type="button" class="btn btn-outline-success btn-xs" 
+                          (click)="viewLocationOnMap(location)" title="View on Map"
+                          [disabled]="!location.latitude || !location.longitude">
+                    <i class="bi bi-geo-alt"></i>
+                  </button>
+                  <button type="button" class="btn btn-outline-danger btn-xs" 
+                          (click)="deleteLocation(location)" title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            
+            <!-- Empty State -->
+            <tr *ngIf="locations.length === 0">
+              <td colspan="8" class="text-center py-4 text-muted">
+                <i class="bi bi-geo-alt display-4 mb-2 d-block"></i>
+                No locations found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <nav *ngIf="totalPages > 1" class="mt-3">
+        <ul class="pagination pagination-sm justify-content-center">
+          <li class="page-item" [class.disabled]="currentPage <= 1">
+            <button class="page-link" (click)="onPageChange(1)" [disabled]="currentPage <= 1">
+              <i class="bi bi-chevron-double-left"></i>
+            </button>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage <= 1">
+            <button class="page-link" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage <= 1">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+          </li>
+          
+          <li *ngFor="let page of getPaginationNumbers()" 
+              class="page-item" [class.active]="page === currentPage">
+            <button class="page-link" (click)="onPageChange(page)">{{ page }}</button>
+          </li>
+          
+          <li class="page-item" [class.disabled]="currentPage >= totalPages">
+            <button class="page-link" (click)="onPageChange(currentPage + 1)" [disabled]="currentPage >= totalPages">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage >= totalPages">
+            <button class="page-link" (click)="onPageChange(totalPages)" [disabled]="currentPage >= totalPages">
+              <i class="bi bi-chevron-double-right"></i>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>

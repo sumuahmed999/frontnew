@@ -1,0 +1,49 @@
+<div class="faq-page">
+  <nav class="page-navbar">
+    <div class="container">
+      <div class="nav-brand" routerLink="/">
+        <img src="assets/logo_compact2.png" alt="BusFood" height="60px"/>
+      </div>
+      <button class="close-btn" routerLink="/">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <nav class="breadcrumb">
+        <a routerLink="/">Home</a> / FAQs
+      </nav>
+      <h1>Frequently Asked Questions</h1>
+      <p>Find quick answers to common questions</p>
+    </div>
+  </div>
+
+  <section class="faq-section">
+    <div class="container">
+      <div class="faq-category" *ngFor="let category of faqCategories">
+        <h2>{{ category.title }}</h2>
+        <div class="faq-list">
+          <div class="faq-item" *ngFor="let faq of category.faqs; let i = index">
+            <div class="faq-question" (click)="toggleFaq(category.id, i)">
+              <h3>{{ faq.question }}</h3>
+              <i class="bi" [class.bi-chevron-down]="!faq.open" [class.bi-chevron-up]="faq.open"></i>
+            </div>
+            <div class="faq-answer" [class.open]="faq.open">
+              <p>{{ faq.answer }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact-cta">
+    <div class="container">
+      <h2>Still have questions?</h2>
+      <p>Our support team is here to help</p>
+      <a routerLink="/contact" class="btn btn-primary">Contact Support</a>
+    </div>
+  </section>
+</div>

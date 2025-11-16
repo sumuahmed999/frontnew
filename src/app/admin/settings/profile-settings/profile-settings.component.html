@@ -1,0 +1,35 @@
+<div class="tab-pane">
+  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" formControlName="fullName" class="form-control form-control-sm">
+        <div *ngIf="profileForm.get('fullName')?.invalid && profileForm.get('fullName')?.touched" 
+             class="error-text">Full name is required</div>
+      </div>
+      
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" formControlName="email" class="form-control form-control-sm">
+        <div *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched" 
+             class="error-text">Valid email is required</div>
+      </div>
+      
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="tel" formControlName="phone" class="form-control form-control-sm">
+        <div *ngIf="profileForm.get('phone')?.invalid && profileForm.get('phone')?.touched" 
+             class="error-text">Valid phone number is required</div>
+      </div>
+      
+      <div class="form-group full-width">
+        <label>Address</label>
+        <textarea formControlName="address" class="form-control form-control-sm" rows="2"></textarea>
+      </div>
+    </div>
+    
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary btn-sm" [disabled]="profileForm.invalid">Update Profile</button>
+    </div>
+  </form>
+</div>

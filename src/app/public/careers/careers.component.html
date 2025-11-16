@@ -1,0 +1,72 @@
+<div class="careers-page">
+  <nav class="page-navbar">
+    <div class="container">
+      <div class="nav-brand" routerLink="/">
+        <img src="assets/logo_compact2.png" alt="BusFood" height="60px"/>
+      </div>
+      <button class="close-btn" routerLink="/">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <nav class="breadcrumb">
+        <a routerLink="/">Home</a> / Careers
+      </nav>
+      <h1>Join Our Team</h1>
+      <p>Help us revolutionize travel dining across India</p>
+    </div>
+  </div>
+
+  <section class="why-join-section">
+    <div class="container">
+      <h2>Why Work at RouteEat?</h2>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <i class="bi bi-rocket-takeoff"></i>
+          <h3>Fast Growth</h3>
+          <p>Be part of a rapidly growing startup</p>
+        </div>
+        <div class="benefit-card">
+          <i class="bi bi-people"></i>
+          <h3>Great Team</h3>
+          <p>Work with passionate, talented people</p>
+        </div>
+        <div class="benefit-card">
+          <i class="bi bi-lightbulb"></i>
+          <h3>Innovation</h3>
+          <p>Solve challenging problems daily</p>
+        </div>
+        <div class="benefit-card">
+          <i class="bi bi-heart"></i>
+          <h3>Work-Life Balance</h3>
+          <p>Flexible hours and remote options</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="openings-section">
+    <div class="container">
+      <h2>Current Openings</h2>
+      <div class="openings-list">
+        <div class="opening-card" *ngFor="let job of openings">
+          <div class="opening-header">
+            <div>
+              <h3>{{ job.title }}</h3>
+              <div class="opening-meta">
+                <span><i class="bi bi-briefcase"></i> {{ job.department }}</span>
+                <span><i class="bi bi-geo-alt"></i> {{ job.location }}</span>
+                <span><i class="bi bi-clock"></i> {{ job.type }}</span>
+              </div>
+            </div>
+            <button class="btn btn-primary">Apply Now</button>
+          </div>
+          <p>{{ job.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

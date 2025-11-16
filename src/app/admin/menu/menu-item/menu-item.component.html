@@ -1,0 +1,538 @@
+<div class="menu-item-container">
+  <!-- Success/Error Messages -->
+  <div *ngIf="successMessage" class="alert alert-success alert-compact mb-2">
+    <i class="bi bi-check-circle me-1"></i>
+    <span class="small">{{ successMessage }}</span>
+    <button type="button" class="btn-close btn-close-sm" (click)="clearMessages()"></button>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger alert-compact mb-2">
+    <i class="bi bi-exclamation-circle me-1"></i>
+    <span class="small">{{ errorMessage }}</span>
+    <button type="button" class="btn-close btn-close-sm" (click)="clearMessages()"></button>
+  </div>
+
+  <!-- Menu Item Form -->
+  <div class="item-form card">
+    <div class="card-header py-2">
+      <div class="d-flex justify-content-between align-items-center">
+        <h6 class="card-title mb-0 small">
+          <i class="bi bi-basket me-1"></i>
+          {{ editingItemId ? 'Edit Menu Item' : 'Add New Menu Item' }}
+        </h6>
+        <button type="button" class="btn btn-outline-secondary btn-xs" 
+                (click)="toggleAdvancedOptions()">
+          <i class="bi bi-gear me-1"></i>
+          {{ showAdvancedOptions ? 'Hide' : 'Show' }} Advanced Options
+        </button>
+      </div>
+    </div>
+    <div class="card-body py-2">
+      <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
+        
+        <!-- Basic Information -->
+        <div class="form-section mb-3">
+          <h6 class="section-title text-xs mb-2">
+            <i class="bi bi-info-circle me-1"></i>Basic Information
+          </h6>
+          <div class="form-grid">
+            <!-- Category Selection -->
+            <div class="form-group">
+              <label class="form-label text-xs">Category *</label>
+              <select formControlName="categoryId" 
+                      class="form-select form-select-sm text-xs" 
+                      [disabled]="isSubmitting || isLoadingCategories">
+                <option value="">Select Category</option>
+                <option *ngFor="let category of categories; trackBy: trackByCategoryId" 
+                        [value]="category.categoryId">
+                  {{ category.categoryName }}
+                </option>
+              </select>
+              <div *ngIf="isLoadingCategories" class="text-muted text-xs mt-1">
+                <i class="spinner-border spinner-border-sm me-1"></i>Loading categories...
+              </div>
+              <div *ngIf="itemForm.get('categoryId')?.invalid && itemForm.get('categoryId')?.touched" 
+                   class="text-danger text-xs mt-1">
+                Category selection is required
+              </div>
+            </div>
+
+            <!-- Subcategory Selection -->
+            <div class="form-group">
+              <label class="form-label text-xs">Subcategory</label>
+              <select formControlName="subcategoryId" 
+                      class="form-select form-select-sm text-xs" 
+                      [disabled]="isSubmitting || isLoadingSubcategories || !itemForm.get('categoryId')?.value">
+                <option value="">Select Subcategory (Optional)</option>
+                <option *ngFor="let subcategory of subcategories; trackBy: trackBySubcategoryId" 
+                        [value]="subcategory.subcategoryId">
+                  {{ subcategory.subcategoryName }}
+                </option>
+              </select>
+              <div *ngIf="isLoadingSubcategories" class="text-muted text-xs mt-1">
+                <i class="spinner-border spinner-border-sm me-1"></i>Loading subcategories...
+              </div>
+            </div>
+
+            <!-- Item Name -->
+            <div class="form-group">
+              <label class="form-label text-xs">Item Name *</label>
+              <input type="text" formControlName="itemName" 
+                     class="form-control form-control-sm text-xs" 
+                     [disabled]="isSubmitting"
+                     placeholder="Enter item name">
+              <div *ngIf="itemForm.get('itemName')?.invalid && itemForm.get('itemName')?.touched" 
+                   class="text-danger text-xs mt-1">
+                Item name is required
+              </div>
+            </div>
+
+            <!-- Price -->
+            <div class="form-group">
+              <label class="form-label text-xs">Price *</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text text-xs">₹</span>
+                <input type="number" step="0.01" min="0" formControlName="price" 
+                       class="form-control text-xs" 
+                       [disabled]="isSubmitting"
+                       placeholder="0.00">
+              </div>
+              <div *ngIf="itemForm.get('price')?.invalid && itemForm.get('price')?.touched" 
+                   class="text-danger text-xs mt-1">
+                Price is required and must be positive
+              </div>
+            </div>
+
+            <!-- Discount Percentage -->
+            <div class="form-group">
+              <label class="form-label text-xs">Discount %</label>
+              <div class="input-group input-group-sm">
+                <input type="number" min="0" max="100" formControlName="discountPercentage" 
+                       class="form-control text-xs" 
+                       [disabled]="isSubmitting"
+                       placeholder="0">
+                <span class="input-group-text text-xs">%</span>
+              </div>
+            </div>
+
+            <!-- Discounted Price (Auto-calculated) -->
+            <div class="form-group" *ngIf="itemForm.get('discountedPrice')?.value">
+              <label class="form-label text-xs">Discounted Price</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text text-xs bg-success text-white">₹</span>
+                <input type="number" formControlName="discountedPrice" 
+                       class="form-control text-xs bg-light" 
+                       readonly>
+              </div>
+              <small class="text-success text-xs">Auto-calculated from discount percentage</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-section mb-3">
+          <div class="form-group">
+            <label class="form-label text-xs">Description</label>
+            <textarea formControlName="description" 
+                      class="form-control form-control-sm text-xs" 
+                      [disabled]="isSubmitting"
+                      placeholder="Item description"
+                      rows="3"></textarea>
+          </div>
+        </div>
+
+          <!-- Advanced Options (Toggleable) -->
+        <div class="form-section mb-3" *ngIf="showAdvancedOptions">
+          <h6 class="section-title text-xs mb-2">
+            <i class="bi bi-gear me-1"></i>Advanced Options
+          </h6>
+          <div class="form-grid">
+            <!-- Dietary Information -->
+            <div class="form-group">
+              <label class="form-label text-xs">Dietary Information</label>
+              <div class="dietary-checkboxes">
+                <div class="form-check form-check-inline">
+                  <input type="checkbox" formControlName="isVegetarian" 
+                         class="form-check-input form-check-input-sm" 
+                         [disabled]="isSubmitting">
+                  <label class="form-check-label text-xs">
+                    <i class="bi bi-circle-fill text-success me-1"></i>Vegetarian
+                  </label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input type="checkbox" formControlName="isVegan" 
+                         class="form-check-input form-check-input-sm" 
+                         [disabled]="isSubmitting">
+                  <label class="form-check-label text-xs">
+                    <i class="bi bi-circle-fill text-danger me-1"></i>Non Veg
+                  </label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input type="checkbox" formControlName="isSpicy" 
+                         class="form-check-input form-check-input-sm" 
+                         [disabled]="isSubmitting">
+                  <label class="form-check-label text-xs">
+                    <i class="bi bi-fire text-danger me-1"></i>Spicy
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Spice Level -->
+            <div class="form-group" *ngIf="itemForm.get('isSpicy')?.value">
+              <label class="form-label text-xs">Spice Level</label>
+              <select formControlName="spiceLevel" 
+                      class="form-select form-select-sm text-xs" 
+                      [disabled]="isSubmitting">
+                <option *ngFor="let level of spiceLevels" [value]="level.value">
+                  {{ level.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Ingredients -->
+            <div class="form-group">
+              <label class="form-label text-xs">Ingredients</label>
+              <textarea formControlName="ingredients" 
+                        class="form-control form-control-sm text-xs" 
+                        [disabled]="isSubmitting"
+                        placeholder="List main ingredients"
+                        rows="2"></textarea>
+            </div>
+
+            <!-- Allergen Information -->
+            <div class="form-group">
+              <label class="form-label text-xs">Allergen Information</label>
+              <textarea formControlName="allergenInfo" 
+                        class="form-control form-control-sm text-xs" 
+                        [disabled]="isSubmitting"
+                        placeholder="Contains: nuts, dairy, etc."
+                        rows="2"></textarea>
+            </div>
+
+            <!-- Nutritional Info -->
+            <div class="form-group">
+              <label class="form-label text-xs">Nutritional Info (JSON)</label>
+              <textarea formControlName="nutritionalInfo" 
+                        class="form-control form-control-sm text-xs" 
+                        [disabled]="isSubmitting"
+                        placeholder='{"calories": 250, "protein": "15g", "carbs": "30g"}'
+                        rows="2"></textarea>
+              <small class="text-muted text-xs">Enter as JSON format or simple text</small>
+            </div>
+
+            <!-- Preparation Time -->
+            <div class="form-group">
+              <label class="form-label text-xs">Preparation Time</label>
+              <div class="input-group input-group-sm">
+                <input type="number" min="0" formControlName="preparationTime" 
+                       class="form-control text-xs" 
+                       [disabled]="isSubmitting"
+                       placeholder="0">
+                <span class="input-group-text text-xs">minutes</span>
+              </div>
+            </div>
+
+            <!-- Availability Status -->
+            <div class="form-group">
+              <label class="form-label text-xs">Availability Status</label>
+              <select formControlName="availabilityStatus" 
+                      class="form-select form-select-sm text-xs" 
+                      [disabled]="isSubmitting">
+                <option *ngFor="let status of availabilityStatuses" [value]="status.value">
+                  {{ status.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Display Order -->
+            <div class="form-group">
+              <label class="form-label text-xs">Display Order</label>
+              <input type="number" min="0" formControlName="displayOrder" 
+                     class="form-control form-control-sm text-xs" 
+                     [disabled]="isSubmitting">
+            </div>
+
+            <!-- Active Status -->
+            <div class="form-group">
+              <div class="form-check mt-3">
+                <input type="checkbox" formControlName="isActive" 
+                       class="form-check-input form-check-input-sm" 
+                       [disabled]="isSubmitting">
+                <label class="form-check-label text-xs">Active Item</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Promotion Section -->
+        <div class="form-section mb-3">
+          <h6 class="section-title text-xs mb-2">
+            <i class="bi bi-star me-1"></i>Promotion Settings
+          </h6>
+          <div class="form-grid">
+            <div class="form-group">
+              <div class="form-check">
+                <input type="checkbox" formControlName="isPromotion" 
+                       class="form-check-input form-check-input-sm" 
+                       [disabled]="isSubmitting">
+                <label class="form-check-label text-xs">This is a promotional item</label>
+              </div>
+            </div>
+
+            <div class="form-group" *ngIf="itemForm.get('isPromotion')?.value">
+              <label class="form-label text-xs">Promotion Label</label>
+              <input type="text" formControlName="promotionLabel" 
+                     class="form-control form-control-sm text-xs" 
+                     [disabled]="isSubmitting"
+                     placeholder="e.g., Today's Special, Limited Offer">
+            </div>
+          </div>
+        </div>
+
+        <!-- Image Upload Section -->
+        <div class="form-section mb-3">
+          <h6 class="section-title text-xs mb-2">
+            <i class="bi bi-images me-1"></i>Images
+          </h6>
+          <div class="image-upload-section">
+            <div class="upload-area">
+              <input type="file" id="imageUpload" (change)="onFileSelect($event)" 
+                     multiple accept="image/*" class="d-none">
+              <label for="imageUpload" class="upload-label">
+                <i class="bi bi-cloud-upload display-6 text-muted mb-2 d-block"></i>
+                <div class="text-xs text-muted">Click to upload images</div>
+                <small class="text-xs text-muted">Support: JPG, PNG, GIF (Max 5MB each)</small>
+              </label>
+            </div>
+
+            <!-- Image Previews -->
+            <div *ngIf="previewImages.length > 0" class="image-previews mt-2">
+              <div class="preview-grid">
+                <div *ngFor="let image of previewImages; let i = index" class="preview-item">
+                  <img [src]="image" [alt]="'Preview ' + (i + 1)" class="preview-image">
+                  <button type="button" class="btn btn-danger btn-xs remove-image" 
+                          (click)="removePreviewImage(i)" title="Remove image">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      
+        <!-- Form Actions -->
+        <div class="form-actions mt-3 pt-2 border-top">
+          <button type="submit" class="btn btn-primary btn-sm" 
+                  [disabled]="itemForm.invalid || isSubmitting">
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-1"></span>
+            <span *ngIf="isSubmitting" class="text-xs">
+              {{ editingItemId ? 'Updating...' : 'Saving...' }}
+            </span>
+            <span *ngIf="!isSubmitting" class="text-xs">
+              <i class="bi bi-save me-1"></i>{{ editingItemId ? 'Update' : 'Save' }} Item
+            </span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm ms-2" 
+                  (click)="resetForm()" [disabled]="isSubmitting">
+            <i class="bi bi-x-circle me-1"></i><span class="text-xs">Reset</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Menu Items List -->
+  <div class="items-list card mt-3">
+    <div class="card-header py-2">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <h6 class="card-title mb-0 small">
+          <i class="bi bi-list me-1"></i>
+          Menu Items <span class="badge badge-sm bg-primary">{{ totalCount }}</span>
+        </h6>
+        
+        <!-- Search and Filter Controls -->
+        <div class="d-flex gap-2 flex-wrap">
+          <div class="input-group input-group-sm" style="width: 200px;">
+            <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" 
+                   class="form-control text-xs" placeholder="Search items...">
+            <button type="button" class="btn btn-outline-primary btn-sm px-2" (click)="onSearch()">
+              <i class="bi bi-search"></i>
+            </button>
+          </div>
+          
+          <select [(ngModel)]="filterCategoryId" (change)="onCategoryFilterChange()" 
+                  class="form-select form-select-sm text-xs" style="width: auto;">
+            <option [ngValue]="undefined">All Categories</option>
+            <option *ngFor="let category of categories; trackBy: trackByCategoryId" 
+                    [ngValue]="category.categoryId">
+              {{ category.categoryName }}
+            </option>
+          </select>
+          
+          <select [(ngModel)]="filterAvailabilityStatus" (change)="onSearch()" 
+                  class="form-select form-select-sm text-xs" style="width: auto;">
+            <option [ngValue]="undefined">All Status</option>
+            <option *ngFor="let status of availabilityStatuses" [value]="status.value">
+              {{ status.label }}
+            </option>
+          </select>
+          
+          <select [(ngModel)]="filterIsPromotion" (change)="onSearch()" 
+                  class="form-select form-select-sm text-xs" style="width: auto;">
+            <option [ngValue]="undefined">All Items</option>
+            <option [ngValue]="true">Promotions</option>
+            <option [ngValue]="false">Regular</option>
+          </select>
+          
+          <select [(ngModel)]="filterActive" (change)="onSearch()" 
+                  class="form-select form-select-sm text-xs" style="width: auto;">
+            <option [ngValue]="undefined">All Status</option>
+            <option [ngValue]="true">Active</option>
+            <option [ngValue]="false">Inactive</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="text-center py-3">
+        <div class="spinner-border spinner-border-sm text-primary"></div>
+        <div class="mt-1 small">Loading menu items...</div>
+      </div>
+
+      <!-- Menu Items Grid/Table -->
+      <div *ngIf="!isLoading" class="items-grid p-3">
+        <div *ngFor="let item of menuItems; trackBy: trackByItemId" class="item-card">
+          <div class="card h-100">
+            <!-- Item Image -->
+            <div class="item-image">
+              <img *ngIf="item.images.length > 0; else noImage" 
+                   [src]="item.images[0]" 
+                   [alt]="item.itemName"
+                   class="card-img-top">
+              <ng-template #noImage>
+                <div class="no-image-placeholder">
+                  <i class="bi bi-image text-muted display-4"></i>
+                </div>
+              </ng-template>
+              
+              <!-- Promotion Badge -->
+              <div *ngIf="item.isPromotion" class="promotion-badge">
+                <span class="badge bg-danger">{{ item.promotionLabel || 'Special' }}</span>
+              </div>
+              
+              <!-- Status Badge -->
+              <div class="status-badge">
+                <span class="badge" [ngClass]="getStatusBadgeClass(item.availabilityStatus)">
+                  {{ getAvailabilityStatusLabel(item.availabilityStatus) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Item Content -->
+            <div class="card-body p-2">
+              <div class="item-header mb-1">
+                <h6 class="item-name text-xs mb-0">{{ item.itemName }}</h6>
+                <div class="item-badges">
+                  <span *ngIf="item.isVegetarian" class="badge bg-success badge-xs" title="Vegetarian">
+                    <i class="bi bi-circle-fill"></i>
+                  </span>
+                  <span *ngIf="item.isVegan" class="badge bg-success badge-xs" title="Non Veg">
+                    <i class="bi bi-heart-fill"></i>
+                  </span>
+                  <span *ngIf="item.isSpicy" class="badge bg-danger badge-xs" title="Spicy">
+                    <i class="bi bi-fire"></i>
+                  </span>
+                </div>
+              </div>
+
+              <p *ngIf="item.description" class="item-description text-xs text-muted">
+                {{ item.description.length > 80 ? (item.description | slice:0:80) + '...' : item.description }}
+              </p>
+
+              <div class="item-details mb-2">
+                <div class="category-info text-xs text-muted">
+                  <i class="bi bi-tag me-1"></i>
+                  {{ item.categoryName }}
+                  <span *ngIf="item.subcategoryName"> / {{ item.subcategoryName }}</span>
+                </div>
+                
+                <div class="price-info">
+                  <span class="current-price fw-bold">₹{{ item.effectivePrice }}</span>
+                  <span *ngIf="item.hasDiscount" class="original-price text-muted text-decoration-line-through ms-1">
+                    ₹{{ item.price }}
+                  </span>
+                  <span *ngIf="item.discountPercentage > 0" class="discount-badge badge bg-success ms-1">
+                    {{ item.discountPercentage }}% OFF
+                  </span>
+                </div>
+              </div>
+
+              <!-- Item Actions -->
+              <div class="item-actions d-flex gap-1">
+                <button type="button" class="btn btn-outline-primary btn-xs flex-grow-1" 
+                        (click)="editMenuItem(item)" title="Edit">
+                  <i class="bi bi-pencil me-1"></i>Edit
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-xs" 
+                        (click)="deleteMenuItem(item)" title="Delete">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Empty State -->
+        <div *ngIf="menuItems.length === 0" class="empty-state text-center py-5">
+          <i class="bi bi-basket display-1 text-muted mb-3 d-block"></i>
+          <h6 class="text-muted">No menu items found</h6>
+          <p class="text-muted small">Add your first menu item to get started</p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <nav *ngIf="totalPages > 1" class="mt-2 px-3 pb-2">
+        <ul class="pagination pagination-sm justify-content-center mb-0">
+          <li class="page-item" [class.disabled]="currentPage <= 1">
+            <button class="page-link px-2 py-1 text-xs" (click)="onPageChange(1)" 
+                    [disabled]="currentPage <= 1">
+              <i class="bi bi-chevron-double-left"></i>
+            </button>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage <= 1">
+            <button class="page-link px-2 py-1 text-xs" 
+                    (click)="onPageChange(currentPage - 1)" 
+                    [disabled]="currentPage <= 1">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+          </li>
+          
+          <li *ngFor="let page of getPaginationNumbers()" 
+              class="page-item" [class.active]="page === currentPage">
+            <button class="page-link px-2 py-1 text-xs" (click)="onPageChange(page)">{{ page }}</button>
+          </li>
+          
+          <li class="page-item" [class.disabled]="currentPage >= totalPages">
+            <button class="page-link px-2 py-1 text-xs" 
+                    (click)="onPageChange(currentPage + 1)" 
+                    [disabled]="currentPage >= totalPages">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage >= totalPages">
+            <button class="page-link px-2 py-1 text-xs" 
+                    (click)="onPageChange(totalPages)" 
+                    [disabled]="currentPage >= totalPages">
+              <i class="bi bi-chevron-double-right"></i>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>

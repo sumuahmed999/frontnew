@@ -1,0 +1,307 @@
+<!-- src/app/admin/users/users.component.html -->
+<div class="users-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h4 class="page-title">
+        <i class="bi bi-people me-2"></i>
+        Users Management
+      </h4>
+      <p class="page-subtitle">View and manage all users</p>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-outline-primary btn-sm me-2" 
+              (click)="refreshUsers()"
+              [disabled]="isLoading"
+              title="Refresh Users">
+        <i class="bi bi-arrow-clockwise me-1" 
+           [class.spin]="isLoading"></i>
+        Refresh
+      </button>
+
+      <button class="btn btn-primary btn-sm" 
+              (click)="exportUsers()"
+              title="Export Users">
+        <i class="bi bi-download me-1"></i>
+        Export
+      </button>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="search-container">
+        <input type="text" 
+               class="form-control form-control-sm" 
+               [(ngModel)]="searchQuery"
+               placeholder="Search by name or phone..."
+               (keyup.enter)="applySearch()">
+        <i class="bi bi-search search-icon"></i>
+      </div>
+      <button class="btn btn-primary btn-sm" 
+              (click)="applySearch()"
+              [disabled]="isLoading">
+        <i class="bi bi-search me-1"></i>
+        Search
+      </button>
+      <button class="btn btn-outline-secondary btn-sm" 
+              (click)="clearSearch()"
+              [disabled]="isLoading || !searchQuery">
+        <i class="bi bi-x-circle me-1"></i>
+        Clear
+      </button>
+    </div>
+
+    <div class="toolbar-right">
+      <span class="total-count">Total: <strong>{{ totalCount }}</strong> users</span>
+      
+      <div class="page-size-filter">
+        <label class="filter-label-small">Show:</label>
+        <select class="form-select form-select-sm" 
+                [(ngModel)]="pageSize"
+                (change)="changePageSize(pageSize)">
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-overlay" *ngIf="isLoading && users.length === 0">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3">Loading users...</p>
+  </div>
+
+  <!-- Users Table -->
+  <div class="users-table-container" *ngIf="!isLoading || users.length > 0">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Passenger Info</th>
+          <th class="sortable" (click)="changeSorting('TotalBookings')">
+            Total Bookings
+            <i class="bi ms-1" 
+               [class.bi-sort-down]="sortBy === 'TotalBookings' && sortOrder === 'desc'"
+               [class.bi-sort-up]="sortBy === 'TotalBookings' && sortOrder === 'asc'"
+               [class.bi-arrow-down-up]="sortBy !== 'TotalBookings'"></i>
+          </th>
+          <th>Status Breakdown</th>
+          <th class="sortable" (click)="changeSorting('TotalAmountSpent')">
+            Total Spent
+            <i class="bi ms-1" 
+               [class.bi-sort-down]="sortBy === 'TotalAmountSpent' && sortOrder === 'desc'"
+               [class.bi-sort-up]="sortBy === 'TotalAmountSpent' && sortOrder === 'asc'"
+               [class.bi-arrow-down-up]="sortBy !== 'TotalAmountSpent'"></i>
+          </th>
+          <th class="sortable" (click)="changeSorting('LastBookingDate')">
+            Last Booking
+            <i class="bi ms-1" 
+               [class.bi-sort-down]="sortBy === 'LastBookingDate' && sortOrder === 'desc'"
+               [class.bi-sort-up]="sortBy === 'LastBookingDate' && sortOrder === 'asc'"
+               [class.bi-arrow-down-up]="sortBy !== 'LastBookingDate'"></i>
+          </th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users" class="user-row">
+          <td>
+            <div class="user-info">
+              <div class="user-avatar">{{ user.passengerName.charAt(0).toUpperCase() }}</div>
+              <div class="user-details">
+                <div class="user-name">{{ user.passengerName }}</div>
+                <div class="user-contact">
+                  <i class="bi bi-telephone me-1"></i>{{ user.passengerPhone }}
+                </div>
+                <div class="user-email" *ngIf="user.passengerEmail">
+                  <i class="bi bi-envelope me-1"></i>{{ user.passengerEmail }}
+                </div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="booking-count">{{ user.totalBookings }}</div>
+          </td>
+          <td>
+            <div class="status-breakdown">
+              <span class="status-chip completed" *ngIf="user.completedBookings > 0">
+                <i class="bi bi-check-circle"></i> {{ user.completedBookings }}
+              </span>
+              <span class="status-chip pending" *ngIf="user.pendingBookings > 0">
+                <i class="bi bi-clock"></i> {{ user.pendingBookings }}
+              </span>
+              <span class="status-chip confirmed" *ngIf="user.confirmedBookings > 0">
+                <i class="bi bi-check"></i> {{ user.confirmedBookings }}
+              </span>
+              <span class="status-chip canceled" *ngIf="user.canceledBookings > 0">
+                <i class="bi bi-x-circle"></i> {{ user.canceledBookings }}
+              </span>
+            </div>
+          </td>
+          <td>
+            <div class="amount-spent">{{ formatCurrency(user.totalAmountSpent) }}</div>
+          </td>
+          <td>
+            <div class="last-booking">
+              <div class="booking-date">{{ user.lastBookingDate | date:'short' }}</div>
+              <div class="booking-number">#{{ user.lastBookingNumber }}</div>
+            </div>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-primary" 
+                    (click)="openUserDetailsModal(user)">
+              <i class="bi bi-eye me-1"></i>
+              View Details
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container" *ngIf="totalPages > 1">
+    <div class="pagination-info">
+      Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, totalCount) }} of {{ totalCount }} users
+    </div>
+    
+    <nav class="pagination-nav">
+      <ul class="pagination">
+        <li class="page-item" [class.disabled]="!hasPreviousPage">
+          <button class="page-link" 
+                  (click)="changePage(currentPage - 1)"
+                  [disabled]="!hasPreviousPage">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+        </li>
+
+        <li *ngFor="let page of getPageNumbers()" 
+            class="page-item" 
+            [class.active]="page === currentPage"
+            [class.disabled]="page === -1">
+          <button *ngIf="page !== -1" 
+                  class="page-link" 
+                  (click)="changePage(page)">
+            {{ page }}
+          </button>
+          <span *ngIf="page === -1" class="page-link">...</span>
+        </li>
+
+        <li class="page-item" [class.disabled]="!hasNextPage">
+          <button class="page-link" 
+                  (click)="changePage(currentPage + 1)"
+                  [disabled]="!hasNextPage">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && users.length === 0">
+    <div class="empty-icon">
+      <i class="bi bi-people"></i>
+    </div>
+    <h5 class="empty-title">No Users Found</h5>
+    <p class="empty-text">
+      {{ searchQuery ? 'No users match your search criteria.' : 'No users have made bookings yet.' }}
+    </p>
+    <button class="btn btn-primary btn-sm" (click)="clearSearch()" *ngIf="searchQuery">
+      <i class="bi bi-x-circle me-1"></i>
+      Clear Search
+    </button>
+  </div>
+</div>
+
+<!-- User Details Modal Backdrop -->
+<div class="modal-backdrop" *ngIf="showUserDetailsModal" (click)="closeUserDetailsModal()"></div>
+
+<!-- User Details Modal -->
+<div class="user-details-modal" *ngIf="showUserDetailsModal">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        <i class="bi bi-person-circle me-2"></i>
+        User Details & Bookings
+      </h5>
+      <button class="btn-close" (click)="closeUserDetailsModal()"></button>
+    </div>
+
+    <div class="modal-body">
+      <!-- User Info Section -->
+      <div class="user-info-section" *ngIf="currentUser">
+        <div class="user-avatar-large">{{ currentUser.passengerName.charAt(0).toUpperCase() }}</div>
+        <div class="user-info-details">
+          <h6 class="user-name-large">{{ currentUser.passengerName }}</h6>
+          <div class="user-contact-info">
+            <span class="contact-item">
+              <i class="bi bi-telephone"></i> {{ currentUser.passengerPhone }}
+            </span>
+            <span class="contact-item" *ngIf="currentUser.passengerEmail">
+              <i class="bi bi-envelope"></i> {{ currentUser.passengerEmail }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="user-stats-grid" *ngIf="currentUser">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-bag-check"></i></div>
+          <div class="stat-value">{{ currentUser.totalBookings }}</div>
+          <div class="stat-label">Total Bookings</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
+          <div class="stat-value">{{ currentUser.completedBookings }}</div>
+          <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-currency-rupee"></i></div>
+          <div class="stat-value">{{ formatCurrency(currentUser.totalAmountSpent) }}</div>
+          <div class="stat-label">Total Spent</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="bi bi-calendar"></i></div>
+          <div class="stat-value">{{ currentUser.firstBookingDate | date:'shortDate' }}</div>
+          <div class="stat-label">First Booking</div>
+        </div>
+      </div>
+
+      <!-- User Bookings -->
+      <div class="user-bookings-section">
+        <h6 class="section-title">
+          <i class="bi bi-list-ul me-2"></i>
+          All Bookings ({{ userOrders.length }})
+        </h6>
+
+        <!-- Loading State -->
+        <div class="loading-state" *ngIf="isLoadingUserOrders">
+          <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+          <span class="ms-2">Loading bookings...</span>
+        </div>
+
+        <!-- Orders List -->
+        <app-recent-orders 
+          *ngIf="!isLoadingUserOrders"
+          [orders]="userOrders"
+          [isLoading]="false"
+          [pendingCount]="0">
+        </app-recent-orders>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeUserDetailsModal()">
+        Close
+      </button>
+    </div>
+  </div>
+</div>

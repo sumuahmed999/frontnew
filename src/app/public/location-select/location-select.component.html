@@ -1,0 +1,52 @@
+<div class="location-select" [class.disabled]="disabled">
+  <label class="label">{{ label }}</label>
+  <div class="input-wrapper" [class.open]="isOpen" [class.disabled]="disabled">
+    <input 
+      type="text" 
+      class="input"
+      [placeholder]="disabled ? 'Select boarding point first' : placeholder"
+      [(ngModel)]="searchTerm"
+      [disabled]="disabled"
+      (input)="onSearch()"
+      (focus)="openDropdown()"
+      (blur)="closeDropdown()"
+      autocomplete="off"
+    />
+    
+    <button 
+      type="button" 
+      class="clear-btn" 
+      *ngIf="searchTerm && !disabled"
+      (mousedown)="clearSelection()">
+      ×
+    </button>
+    
+    <span class="arrow" [class.rotated]="isOpen">▼</span>
+    
+    <div class="loading" *ngIf="locations.length === 0 && !disabled">
+      <div class="spinner"></div>
+    </div>
+    
+    <div class="dropdown" *ngIf="isOpen && !disabled">
+      <div class="option" 
+           *ngFor="let location of filteredLocations; trackBy: trackByLocationId" 
+           (mousedown)="selectLocation(location)"
+           [class.selected]="selectedLocation?.id === location.id">
+        <div class="option-content">
+          <div class="name">{{ location.name }}</div>
+          <div class="details" *ngIf="location.state">
+            {{ location.state }}<span *ngIf="location.code"> • {{ location.code }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="no-results" *ngIf="filteredLocations.length === 0 && locations.length > 0">
+        No locations found
+      </div>
+      
+      <div class="no-results" *ngIf="locations.length === 0">
+        No locations available
+      </div>
+    </div>
+  </div>
+</div>

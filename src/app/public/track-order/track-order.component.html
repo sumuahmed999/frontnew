@@ -1,0 +1,221 @@
+<div class="track-order-page">
+  <nav class="page-navbar">
+    <div class="container">
+      <div class="nav-brand" routerLink="/">
+        <img src="assets/logo_compact2.png" alt="BusFood" height="60px"/>
+      </div>
+      <button class="close-btn" routerLink="/">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </nav>
+
+  <div class="page-content">
+    <div class="container">
+      <!-- Phone Number Step -->
+      <div class="step-container" *ngIf="step === 'phone'">
+        <div class="step-icon">
+          <i class="bi bi-phone"></i>
+        </div>
+        <h1>Track Your Order</h1>
+        <p>Enter your phone number to view your orders</p>
+        
+        <!-- Error Message -->
+        <div class="error-message" *ngIf="errorMessage">
+          <i class="bi bi-exclamation-circle"></i>
+          {{ errorMessage }}
+        </div>
+        
+        <form class="track-form" (ngSubmit)="onSubmitPhone()">
+          <div class="form-group">
+            <label>Phone Number</label>
+            <div class="phone-input">
+              <span class="country-code">+91</span>
+              <input 
+                type="tel" 
+                [(ngModel)]="phoneNumber" 
+                name="phone"
+                placeholder="Enter 10 digit mobile number"
+                maxlength="10"
+                pattern="[0-9]{10}"
+                required
+                autocomplete="tel">
+            </div>
+          </div>
+          
+          <button 
+            type="submit" 
+            class="btn btn-primary" 
+            [disabled]="phoneNumber.length !== 10 || isSubmitting">
+            <span *ngIf="!isSubmitting">
+              <i class="bi bi-arrow-right me-2"></i>
+              Continue
+            </span>
+            <span *ngIf="isSubmitting">
+              <i class="bi bi-hourglass-split me-2"></i>
+              Please wait...
+            </span>
+          </button>
+        </form>
+      </div>
+
+      <!-- OTP Verification Step -->
+      <div class="step-container" *ngIf="step === 'otp'">
+        <div class="step-icon">
+          <i class="bi bi-shield-check"></i>
+        </div>
+        <h1>Verify OTP</h1>
+        <p>Enter the 4-digit code sent to +91 {{ phoneNumber }}</p>
+        
+        <!-- Error/Success Message -->
+        <div class="error-message" *ngIf="errorMessage && !errorMessage.includes('success')">
+          <i class="bi bi-exclamation-circle"></i>
+          {{ errorMessage }}
+        </div>
+        <div class="success-message" *ngIf="errorMessage && errorMessage.includes('success')">
+          <i class="bi bi-check-circle"></i>
+          {{ errorMessage }}
+        </div>
+        
+        <form class="track-form" (ngSubmit)="onSubmitOtp()">
+          <div class="form-group">
+            <label>OTP Code</label>
+            <input 
+              type="text" 
+              [(ngModel)]="otp" 
+              name="otp"
+              placeholder="Enter 4 digit OTP"
+              maxlength="4"
+              pattern="[0-9]{4}"
+              class="otp-input"
+              required
+              autocomplete="one-time-code"
+              inputmode="numeric">
+          </div>
+          
+          <div class="otp-actions">
+            <button type="button" class="link-btn" (click)="resendOtp()" [disabled]="isSubmitting">
+              <i class="bi bi-arrow-clockwise"></i>
+              Resend OTP
+            </button>
+            <button type="button" class="link-btn" (click)="changePhone()">
+              <i class="bi bi-pencil"></i>
+              Change Number
+            </button>
+          </div>
+          
+          <button 
+            type="submit" 
+            class="btn btn-primary" 
+            [disabled]="otp.length !== 4 || isSubmitting">
+            <span *ngIf="!isSubmitting">
+              <i class="bi bi-check-circle me-2"></i>
+              Verify & Continue
+            </span>
+            <span *ngIf="isSubmitting">
+              <i class="bi bi-hourglass-split me-2"></i>
+              Verifying...
+            </span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Orders List Step - DISPLAYS ALL ORDERS -->
+      <div class="orders-container" *ngIf="step === 'orders'">
+        <div class="orders-header">
+          <div>
+            <h1>Your Orders</h1>
+            <p>Phone: +91 {{ phoneNumber }}</p>
+            <p class="order-count">Total Orders: {{ orders.length }}</p>
+          </div>
+          <button class="btn btn-outline" (click)="changePhone()">
+            <i class="bi bi-arrow-left me-2"></i>
+            Change Number
+          </button>
+        </div>
+
+        <div class="orders-list">
+          <!-- Order Cards - DISPLAYS ALL BOOKINGS -->
+          <div class="order-card" *ngFor="let order of orders; let i = index" (click)="viewOrderDetails(order.bookingId)">
+            <div class="order-header">
+              <div class="order-id">
+                <i class="bi bi-receipt"></i>
+                <span>{{ order.orderId }}</span>
+              </div>
+              <div class="order-status" [style.color]="getStatusColor(order.status)">
+                <i class="bi bi-circle-fill"></i>
+                {{ getStatusText(order.status) }}
+              </div>
+            </div>
+
+            <div class="order-body">
+              <div class="restaurant-info">
+                <i class="bi bi-shop"></i>
+                <h3>{{ order.restaurantName }}</h3>
+              </div>
+              
+              <div class="order-details">
+                <div class="detail-row">
+                  <i class="bi bi-bag"></i>
+                  <span>{{ order.items }}</span>
+                </div>
+                <div class="detail-row">
+                  <i class="bi bi-bus-front"></i>
+                  <span>{{ order.busNumber }} - {{ order.busName }}</span>
+                </div>
+                <div class="detail-row">
+                  <i class="bi bi-calendar"></i>
+                  <span>{{ order.departureDate }} at {{ order.departureTime }}</span>
+                </div>
+                <div class="detail-row">
+                  <i class="bi bi-clock"></i>
+                  <span>Ordered at {{ order.orderTime }}</span>
+                </div>
+                <div class="detail-row" *ngIf="order.status !== 'delivered' && order.status !== 'cancelled'">
+                  <i class="bi bi-hourglass-split"></i>
+                  <span>ETA: {{ order.estimatedTime }}</span>
+                </div>
+                <div class="detail-row" *ngIf="order.status === 'delivered'">
+                  <i class="bi bi-check-circle"></i>
+                  <span>Delivered at {{ order.deliveredTime }}</span>
+                </div>
+              </div>
+
+              <div class="order-footer">
+                <div class="order-amount">
+                  <span>Total Amount</span>
+                  <strong>₹{{ formatAmount(order.amount) }}</strong>
+                </div>
+                <button 
+                  class="btn btn-sm btn-primary" 
+                  *ngIf="order.status !== 'delivered' && order.status !== 'cancelled'"
+                  (click)="$event.stopPropagation()">
+                  <i class="bi bi-eye"></i>
+                  View Details
+                </button>
+                <button 
+                  class="btn btn-sm btn-outline" 
+                  *ngIf="order.status === 'delivered'"
+                  (click)="$event.stopPropagation()">
+                  <i class="bi bi-arrow-repeat"></i>
+                  Reorder
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- No Orders -->
+          <div class="no-orders" *ngIf="orders.length === 0">
+            <i class="bi bi-inbox"></i>
+            <h3>No Orders Found</h3>
+            <p>You haven't placed any orders yet</p>
+            <button class="btn btn-primary" routerLink="/search">
+              <i class="bi bi-search me-2"></i>
+              Find Your Bus
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

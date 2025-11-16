@@ -1,0 +1,75 @@
+<div class="about-page">
+  <!-- Navigation -->
+  <nav class="page-navbar">
+    <div class="container">
+      <div class="nav-brand" routerLink="/">
+        <img src="assets/logo_compact2.png" alt="BusFood" height="60px"/>
+      </div>
+      <button class="close-btn" routerLink="/">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <nav class="breadcrumb">
+        <a routerLink="/">Home</a> / About Us
+      </nav>
+      <h1>About RouteEat</h1>
+      <p>Revolutionizing travel dining, one journey at a time</p>
+    </div>
+  </div>
+
+  <section class="mission-section">
+    <div class="container">
+      <h2>Our Mission</h2>
+      <p class="lead">To make every journey delicious by connecting travelers with quality food, delivered right to their seats.</p>
+      <p>We believe that hunger shouldn't be a part of your travel experience. RouteEat was born from the simple idea that travelers deserve access to fresh, hygienic, and delicious meals during their journeys.</p>
+      
+      <div class="stats-grid">
+        <div class="stat-card" *ngFor="let stat of stats">
+          <h3>{{ stat.value }}</h3>
+          <p>{{ stat.label }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="story-section">
+    <div class="container">
+      <h2>Our Story</h2>
+      <p>RouteEat started in 2023 when our founder, during a long bus journey, experienced the common traveler's dilemma - limited food options, uncertain quality, and inconvenient stops. This sparked the idea to create a platform that would solve this problem for millions of travelers across India.</p>
+      
+      <p>What began as a simple concept has now grown into a comprehensive platform connecting travelers with quality restaurants along their routes. We've partnered with hundreds of restaurants, ensuring that every meal meets our high standards of quality, hygiene, and taste.</p>
+    </div>
+  </section>
+
+  <section class="values-section">
+    <div class="container">
+      <h2>Our Values</h2>
+      <div class="values-grid">
+        <div class="value-card">
+          <i class="bi bi-shield-check"></i>
+          <h3>Quality First</h3>
+          <p>We partner only with restaurants that meet our strict quality and hygiene standards.</p>
+        </div>
+        <div class="value-card">
+          <i class="bi bi-clock"></i>
+          <h3>Reliability</h3>
+          <p>Timely delivery and consistent service you can count on.</p>
+        </div>
+        <div class="value-card">
+          <i class="bi bi-people"></i>
+          <h3>Customer Centric</h3>
+          <p>Every decision we make is focused on improving the traveler's experience.</p>
+        </div>
+        <div class="value-card">
+          <i class="bi bi-lightbulb"></i>
+          <h3>Innovation</h3>
+          <p>Continuously improving our platform with the latest technology.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,71 @@
+<div class="admin-layout">
+  <!-- Sidebar Component -->
+  <app-sidebar 
+    [isCollapsed]="isSidebarCollapsed"
+    [userData]="userData"
+    (toggleSidebar)="onToggleSidebar()"
+    (logoutEvent)="onLogout()">
+  </app-sidebar>
+
+  <!-- Main Content -->
+  <main class="main-content" [class.sidebar-collapsed]="isSidebarCollapsed">
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="header-left">
+        <button class="mobile-menu-toggle d-lg-none" (click)="onToggleSidebar()">
+          <i class="bi bi-list"></i>
+        </button>
+        <div class="page-title">
+          <h1>Welcome back, {{ userData?.username || 'Admin' }}</h1>
+          <p class="page-subtitle">{{ currentTime | date:'EEEE, MMMM d, y' }}</p>
+        </div>
+      </div>
+      
+      <div class="header-right">
+        <div class="header-actions">
+          
+          <!-- Notifications Button -->
+          <!-- <button class="header-btn" 
+                  title="Notifications"
+                  (click)="toggleNotifications()">
+            <i class="bi bi-bell"></i>
+            <span class="badge">3</span>
+          </button> -->
+
+          <!-- Profile Button -->
+          <div class="position-relative">
+            <button class="header-btn" 
+                    title="Profile"
+                    (click)="toggleProfilePopup()">
+              <i class="bi bi-person-circle"></i>
+            </button>
+            
+            <!-- Profile Popup -->
+            <app-profile-popup 
+              [isOpen]="showProfilePopup"
+              [userData]="userData"
+              (closePopup)="closeProfilePopup()"
+              (logoutEvent)="onLogout()">
+            </app-profile-popup>
+          </div>
+
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="page-content">
+      <!-- System Control Toggle -->
+    
+      
+      <!-- Main Dashboard Content -->
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+
+  <!-- Notification Panel -->
+  <app-notification-panel 
+    [isOpen]="showNotificationPanel"
+    (closePanel)="closeNotificationPanel()">
+  </app-notification-panel>
+</div>

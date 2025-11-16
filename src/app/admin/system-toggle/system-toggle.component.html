@@ -1,0 +1,28 @@
+<div class="system-toggle-compact">
+  <div class="toggle-content">
+    <div class="toggle-info">
+      <h6 class="toggle-title">System Accessibility</h6>
+      <p class="toggle-subtitle">{{ getStatusText() }}</p>
+    </div>
+    
+    <div class="toggle-switch-container">
+      <label class="compact-toggle" [class.disabled]="isLoading">
+        <input 
+          type="checkbox" 
+          [checked]="isSystemOnline"
+          (change)="toggleSystem()"
+          [disabled]="isLoading"
+        />
+        <span class="toggle-slider" [class.loading]="isLoading">
+          <span class="toggle-button">
+            <i class="bi" 
+               [class]="isLoading ? 'bi-arrow-repeat spin' : (isSystemOnline ? 'bi-check' : 'bi-x')"></i>
+          </span>
+        </span>
+      </label>
+      <div class="status-indicator" [class.online]="isSystemOnline" [class.loading]="isLoading">
+        {{ isLoading ? 'Updating...' : (isSystemOnline ? 'Online' : 'Offline') }}
+      </div>
+    </div>
+  </div>
+</div>

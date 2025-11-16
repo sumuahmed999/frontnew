@@ -1,0 +1,51 @@
+<div class="profile-popup" [class.open]="isOpen">
+  <div class="profile-popup-content">
+    <!-- User Info -->
+    <div class="user-section">
+      <div class="user-avatar">
+        {{ userData?.username?.charAt(0)?.toUpperCase() || 'A' }}
+      </div>
+      <div class="user-details">
+        <div class="user-name">{{ userData?.username || 'Admin' }}</div>
+        <div class="user-email">{{ userData?.email || 'admin@busck.com' }}</div>
+        <div class="user-role">
+          <i class="bi bi-shield-check me-1"></i>
+          Administrator
+        </div>
+      </div>
+    </div>
+
+    <hr class="popup-divider">
+
+    <!-- Menu Items -->
+    <div class="menu-section">
+      <button class="menu-item" (click)="onViewProfile()">
+        <i class="bi bi-person"></i>
+        <span>View Profile</span>
+        <i class="bi bi-chevron-right ms-auto"></i>
+      </button>
+
+      <button class="menu-item" (click)="onSettings()">
+        <i class="bi bi-gear"></i>
+        <span>Account Settings</span>
+        <i class="bi bi-chevron-right ms-auto"></i>
+      </button>
+
+      <button class="menu-item">
+        <i class="bi bi-question-circle"></i>
+        <span>Help & Support</span>
+        <i class="bi bi-chevron-right ms-auto"></i>
+      </button>
+    </div>
+
+    <hr class="popup-divider">
+
+    <!-- Logout Button -->
+    <div class="logout-section">
+      <button class="logout-btn" (click)="onLogout()">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Sign Out</span>
+      </button>
+    </div>
+  </div>
+</div>

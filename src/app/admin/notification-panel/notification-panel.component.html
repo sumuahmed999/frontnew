@@ -1,0 +1,67 @@
+<div class="notification-panel" [class.open]="isOpen">
+  <div class="notification-overlay" (click)="onClose()"></div>
+  
+  <div class="notification-content">
+    <!-- Header -->
+    <div class="notification-header">
+      <div class="header-left">
+        <h5 class="mb-0">
+          <i class="bi bi-bell me-2"></i>
+          Notifications
+        </h5>
+        <span class="badge bg-primary ms-2" *ngIf="getUnreadCount() > 0">
+          {{ getUnreadCount() }}
+        </span>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-sm btn-outline-secondary me-2" 
+                (click)="markAllAsRead()"
+                *ngIf="getUnreadCount() > 0">
+          <i class="bi bi-check2-all"></i>
+          Mark all read
+        </button>
+        <button class="btn btn-sm btn-outline-secondary" (click)="onClose()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="notification-body">
+      <div class="notification-item" 
+           *ngFor="let notification of notifications"
+           [class.unread]="!notification.read"
+           (click)="markAsRead(notification)">
+        <div class="notification-icon">
+          <i [class]="getIconClass(notification.type)"></i>
+        </div>
+        <div class="notification-content-text">
+          <div class="notification-title">{{ notification.title }}</div>
+          <div class="notification-message">{{ notification.message }}</div>
+          <div class="notification-time">
+            <i class="bi bi-clock me-1"></i>
+            {{ notification.time }}
+          </div>
+        </div>
+        <div class="notification-status" *ngIf="!notification.read">
+          <div class="unread-dot"></div>
+        </div>
+      </div>
+      
+      <div class="notification-item" *ngIf="notifications.length === 0">
+        <div class="text-center text-muted py-4">
+          <i class="bi bi-bell-slash fs-1 mb-2"></i>
+          <p class="mb-0">No notifications</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="notification-footer">
+      <button class="btn btn-sm btn-primary w-100">
+        <i class="bi bi-arrow-right me-2"></i>
+        View all notifications
+      </button>
+    </div>
+  </div>
+</div>

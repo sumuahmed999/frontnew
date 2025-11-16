@@ -1,0 +1,147 @@
+<!-- stop-overs.component.html - Compact Professional Design -->
+<div class="journey-container">
+  <!-- Loading State -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="loading-card">
+      <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+      </div>
+      <h3>Loading journey...</h3>
+      <p>Please wait while we fetch your stops</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-overlay" *ngIf="error && !isLoading">
+    <div class="error-card">
+      <div class="error-icon">
+        <i class="bi bi-exclamation-triangle"></i>
+      </div>
+      <h3>Unable to load journey</h3>
+      <p>{{ error }}</p>
+      <div class="error-actions">
+        <button class="btn-retry" (click)="retryLoad()">Try Again</button>
+        <button class="btn-back" (click)="goBack()">Go Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="journey-content" *ngIf="!isLoading && !error && bookingDetails">
+    <!-- Compact Header -->
+    <div class="header">
+      <button class="back-btn" (click)="goBack()">
+        <i class="bi bi-arrow-left"></i>
+      </button>
+      <div class="route-info">
+        <div class="route-details">
+          <h2>{{ fromLocation }} → {{ toLocation }}</h2>
+          <div class="journey-meta">
+            <span class="journey-date">
+              <i class="bi bi-calendar3"></i>
+              {{ formattedDate }}
+            </span>
+            <span class="separator">•</span>
+            <span class="journey-time">
+              <i class="bi bi-clock"></i>
+              {{ formatTime(departureTime) }}
+            </span>
+          </div>
+        </div>
+        <div class="status-badge" [class]="'status-' + bookingDetails.bookingStatus.toLowerCase()">
+          {{ bookingDetails.bookingStatus }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="content-section">
+      <!-- Journey Summary -->
+      <div class="summary-card">
+        <div class="summary-header">
+          <h3>Journey Stops</h3>
+          <p>Your route with {{ stopOvers.length }} intermediate stops</p>
+        </div>
+        
+        <div class="summary-stats">
+          <div class="stat-item">
+            <div class="stat-value">{{ stopOvers.length }}</div>
+            <div class="stat-label">Stops</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <div class="stat-value">{{ getTotalDistance() }}</div>
+            <div class="stat-label">Total KM</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <div class="stat-value">{{ getTotalJourneyTime() }}</div>
+            <div class="stat-label">Duration</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stops Timeline -->
+      <div class="stops-section" *ngIf="stopOvers.length > 0">
+        <div class="stops-list">
+          <div class="stop-item" 
+               *ngFor="let stopOver of stopOvers; let i = index; trackBy: trackByStopId"
+               (click)="selectStopOver(stopOver)"
+               [style.animation-delay.ms]="i * 100">
+            
+            <!-- <div class="stop-marker">
+              <div class="marker-number">{{ stopOver.stopOrder }}</div>
+              <div class="marker-line" *ngIf="i < stopOvers.length - 1"></div>
+            </div>
+             -->
+            <div class="stop-card">
+              <div class="stop-header">
+                <div class="stop-title-group">
+                  <h4>{{ stopOver.name }}</h4>
+                  <!-- <span class="stop-code">{{ stopOver.code }}</span> -->
+                </div>
+                <button class="action-btn">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </div>
+              
+              <div class="stop-details">
+                <div class="detail-item">
+                  <i class="bi bi-clock-fill"></i>
+                  <div class="detail-content">
+                    <span class="detail-label">Arrival Time</span>
+                    <span class="detail-value">{{ getCalculatedArrivalTime(stopOver) }}</span>
+                  </div>
+                </div>
+                
+                <div class="detail-item">
+                  <i class="bi bi-geo-alt-fill"></i>
+                  <div class="detail-content">
+                    <span class="detail-label">Distance</span>
+                    <span class="detail-value">{{ getDistanceFromStart(stopOver) }} km from start</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="stop-address" *ngIf="stopOver.address">
+                <p>{{ stopOver.address }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="stopOvers.length === 0">
+        <div class="empty-icon">
+          <i class="bi bi-arrow-right-circle"></i>
+        </div>
+        <h4>Direct Route</h4>
+        <p>This journey goes directly to your destination with no intermediate stops</p>
+        <button class="explore-btn" (click)="goBack()">
+          View Route Details
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,513 @@
+.confirmation-container {
+  height: 100vh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+// Loading & Error States
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: 2rem;
+}
+
+.loading-state {
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: #64748b;
+  }
+}
+
+.error-state {
+  i {
+    font-size: 3rem;
+    color: #ef4444;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    font-size: 1.2rem;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin: 0 0 1.5rem 0;
+  }
+
+  button {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// Content Area
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1rem 0;
+  
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+  }
+}
+
+// Compact Header
+.header {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+.success-animation {
+  margin-bottom: 1rem;
+}
+
+.checkmark-circle {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.25);
+  animation: bounceIn 0.8s ease-out;
+
+  i {
+    font-size: 2rem;
+    color: white;
+  }
+}
+
+.success-message {
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.25rem 0;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin: 0;
+  }
+}
+
+// Compact Order Card
+.order-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f1f5f9;
+  margin-bottom: 6rem; // Space for fixed button
+  overflow: hidden;
+}
+
+// Order ID Section - Compact
+.order-id-section {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  padding: 1rem;
+  color: white;
+}
+
+.order-id-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.order-id-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  i {
+    font-size: 1.25rem;
+    opacity: 0.9;
+  }
+
+  div {
+    .label {
+      display: block;
+      font-size: 0.8rem;
+      opacity: 0.8;
+    }
+
+    .value {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+  }
+}
+
+.timing {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.4rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  i {
+    font-size: 0.8rem;
+  }
+}
+
+// Restaurant Section - Compact
+.restaurant-section {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.restaurant-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  i {
+    font-size: 1.1rem;
+    color: #3b82f6;
+    flex-shrink: 0;
+  }
+
+  .location-text {
+    h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 0.25rem 0;
+    }
+
+    p {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin: 0;
+    }
+  }
+}
+
+// Order Items - Very Compact
+.order-items-section {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+
+  h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    i {
+      color: #3b82f6;
+      font-size: 0.9rem;
+    }
+  }
+
+  .items-count {
+    font-size: 0.8rem;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+  }
+}
+
+.items-compact {
+  margin-bottom: 0.75rem;
+}
+
+.item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f8fafc;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .item-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1e293b;
+    flex: 1;
+  }
+
+  .item-details {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 500;
+  }
+}
+
+.total-section {
+  .amount-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+
+  .discount-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    color: #059669;
+    background: #f0fdf4;
+    border-radius: 6px;
+    margin: 0.5rem 0;
+
+    i {
+      margin-right: 0.25rem;
+      font-size: 0.8rem;
+    }
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e293b;
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 700;
+    margin-top: 0.5rem;
+
+    .total-amount {
+      font-size: 1.1rem;
+    }
+  }
+}
+
+// Instructions - Compact
+.instructions-section {
+  padding: 1rem;
+
+  h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.75rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    i {
+      color: #10b981;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+.instructions-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.instruction-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: #475569;
+
+  i {
+    width: 20px;
+    color: #3b82f6;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  strong {
+    color: #1e293b;
+  }
+}
+
+// Fixed Action Button (Single Button Only)
+.action-buttons {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 500px;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+
+  @media (max-width: 500px) {
+    left: 0;
+    transform: none;
+    max-width: 100%;
+    padding: 0.875rem;
+  }
+}
+
+.action-btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  &.primary {
+    background: #3b82f6;
+    color: white;
+    border: none;
+
+    &:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+    }
+  }
+
+  i {
+    font-size: 0.85rem;
+  }
+}
+
+// Animations
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(-30px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+// Mobile Responsive
+@media (max-width: 768px) {
+  .content-area {
+    padding: 0.75rem 0.75rem 0;
+  }
+
+  .checkmark-circle {
+    width: 60px;
+    height: 60px;
+
+    i {
+      font-size: 1.75rem;
+    }
+  }
+
+  .success-message h1 {
+    font-size: 1.25rem;
+  }
+
+  .order-id-section,
+  .restaurant-section,
+  .order-items-section,
+  .instructions-section {
+    padding: 0.875rem;
+  }
+
+  .order-id-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+
+    .timing {
+      align-self: flex-end;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .content-area {
+    padding: 0.5rem 0.5rem 0;
+  }
+
+  .action-buttons {
+    padding: 0.75rem;
+  }
+
+  .action-btn {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+  }
+}

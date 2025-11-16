@@ -1,0 +1,526 @@
+<!-- src/app/public/landing/landing.component.html -->
+<div class="landing-page">
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-brand">
+           <img src="assets/logo_compact2.png" alt="BusFood" height="60px"/>
+      </div>
+      <div class="nav-links">
+        <a (click)="scrollToSection('features')" class="nav-link">Features</a>
+        <a (click)="scrollToSection('how-it-works')" class="nav-link">How It Works</a>
+        <a (click)="scrollToSection('testimonials')" class="nav-link">Reviews</a>
+        <a routerLink="/contact" class="nav-link">Contact</a>
+        <button class="btn btn-primary" routerLink="/track-order">
+          <i class="bi bi-geo-alt me-1"></i>
+          Track Order
+        </button>
+      </div>
+      <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+        <i class="bi" [class.bi-list]="!mobileMenuOpen" [class.bi-x]="mobileMenuOpen"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu Overlay -->
+  <div class="mobile-menu-overlay" [class.active]="mobileMenuOpen" (click)="closeMobileMenu()"></div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" [class.active]="mobileMenuOpen">
+    <div class="mobile-nav-links">
+      <a (click)="scrollToSection('features'); closeMobileMenu()" class="nav-link">
+        <i class="bi bi-star"></i>
+        Features
+      </a>
+      <a (click)="scrollToSection('how-it-works'); closeMobileMenu()" class="nav-link">
+        <i class="bi bi-lightbulb"></i>
+        How It Works
+      </a>
+      <a (click)="scrollToSection('testimonials'); closeMobileMenu()" class="nav-link">
+        <i class="bi bi-chat-quote"></i>
+        Reviews
+      </a>
+      <a routerLink="/contact" (click)="closeMobileMenu()" class="nav-link">
+        <i class="bi bi-envelope"></i>
+        Contact
+      </a>
+      <button class="btn btn-primary" routerLink="/track-order" (click)="closeMobileMenu()">
+        <i class="bi bi-geo-alt me-2"></i>
+        Track Order
+      </button>
+    </div>
+  </div>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-background">
+      <div class="hero-shape shape-1"></div>
+      <div class="hero-shape shape-2"></div>
+      <div class="hero-shape shape-3"></div>
+      
+      <!-- Floating Food SVG Icons -->
+      <!-- Burger Icon -->
+      <div class="floating-icon icon-1">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="32" cy="54" rx="24" ry="6" fill="#8B4513" opacity="0.2"/>
+          <path d="M8 38 Q8 32 14 32 L50 32 Q56 32 56 38 L56 48 Q56 54 50 54 L14 54 Q8 54 8 48 Z" fill="#D2691E"/>
+          <rect x="10" y="36" width="44" height="4" fill="#8B4513" opacity="0.3"/>
+          <path d="M10 32 L54 32 L54 36 L10 36 Z" fill="#228B22"/>
+          <ellipse cx="18" cy="34" rx="2" ry="1.5" fill="#90EE90"/>
+          <ellipse cx="28" cy="34" rx="2" ry="1.5" fill="#90EE90"/>
+          <ellipse cx="38" cy="34" rx="2" ry="1.5" fill="#90EE90"/>
+          <ellipse cx="48" cy="34" rx="2" ry="1.5" fill="#90EE90"/>
+          <path d="M10 28 L54 28 L54 32 L10 32 Z" fill="#FF6347"/>
+          <path d="M10 24 L54 24 L54 28 L10 28 Z" fill="#FFD700"/>
+          <circle cx="20" cy="26" r="1.5" fill="#FFA500"/>
+          <circle cx="32" cy="26" r="1.5" fill="#FFA500"/>
+          <circle cx="44" cy="26" r="1.5" fill="#FFA500"/>
+          <path d="M8 24 Q8 18 14 16 Q20 14 32 14 Q44 14 50 16 Q56 18 56 24 Z" fill="#DEB887"/>
+          <ellipse cx="20" cy="18" rx="3" ry="2" fill="#F5DEB3"/>
+          <ellipse cx="35" cy="19" rx="2.5" ry="1.8" fill="#F5DEB3"/>
+          <ellipse cx="48" cy="18" rx="3" ry="2" fill="#F5DEB3"/>
+        </svg>
+      </div>
+
+      <!-- Pizza Icon -->
+      <div class="floating-icon icon-2">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <path d="M32 8 L58 54 L6 54 Z" fill="#FFD700"/>
+          <path d="M32 8 L58 54 L6 54 Z" fill="#FFA500" opacity="0.7"/>
+          <path d="M32 12 L54 50 L10 50 Z" fill="#FF6347"/>
+          <circle cx="28" cy="32" r="4" fill="#DC143C"/>
+          <circle cx="38" cy="28" r="3.5" fill="#DC143C"/>
+          <circle cx="32" cy="42" r="3.5" fill="#DC143C"/>
+          <circle cx="22" cy="40" r="3" fill="#DC143C"/>
+          <circle cx="42" cy="38" r="3" fill="#DC143C"/>
+          <ellipse cx="26" cy="24" rx="3" ry="2" fill="#F5F5DC" opacity="0.9"/>
+          <ellipse cx="36" cy="36" rx="3.5" ry="2.5" fill="#F5F5DC" opacity="0.9"/>
+          <ellipse cx="30" cy="48" rx="3" ry="2" fill="#F5F5DC" opacity="0.9"/>
+          <path d="M32 8 L32 54" stroke="#D2691E" stroke-width="1" opacity="0.3"/>
+        </svg>
+      </div>
+
+      <!-- French Fries Icon -->
+      <div class="floating-icon icon-3">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 28 L20 54 L44 54 L46 28 Z" fill="#DC143C"/>
+          <path d="M18 28 L20 54 L44 54 L46 28 Z" fill="#B22222" opacity="0.3"/>
+          <path d="M16 24 L18 28 L46 28 L48 24 Z" fill="#FF0000"/>
+          <rect x="22" y="14" width="4" height="18" fill="#FFD700" rx="2"/>
+          <rect x="28" y="10" width="4" height="22" fill="#FFD700" rx="2"/>
+          <rect x="34" y="12" width="4" height="20" fill="#FFD700" rx="2"/>
+          <rect x="40" y="16" width="4" height="16" fill="#FFD700" rx="2"/>
+          <rect x="22" y="14" width="4" height="18" fill="#FFA500" opacity="0.4" rx="2"/>
+          <rect x="28" y="10" width="4" height="22" fill="#FFA500" opacity="0.4" rx="2"/>
+          <rect x="34" y="12" width="4" height="20" fill="#FFA500" opacity="0.4" rx="2"/>
+          <rect x="40" y="16" width="4" height="16" fill="#FFA500" opacity="0.4" rx="2"/>
+          <ellipse cx="32" cy="36" rx="8" ry="3" fill="#8B0000" opacity="0.2"/>
+        </svg>
+      </div>
+
+      <!-- Taco Icon -->
+      <div class="floating-icon icon-4">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 48 Q12 24 32 16 Q52 24 52 48 Z" fill="#F4A460"/>
+          <path d="M12 48 Q12 24 32 16 Q52 24 52 48 Z" fill="#DEB887" opacity="0.5"/>
+          <path d="M16 46 Q16 28 32 22 Q48 28 48 46 Z" fill="#8B4513" opacity="0.3"/>
+          <path d="M18 44 Q18 30 32 26 Q46 30 46 44 Z" fill="#228B22"/>
+          <ellipse cx="24" cy="36" rx="2" ry="1.5" fill="#90EE90"/>
+          <ellipse cx="32" cy="34" rx="2" ry="1.5" fill="#90EE90"/>
+          <ellipse cx="40" cy="36" rx="2" ry="1.5" fill="#90EE90"/>
+          <path d="M20 40 Q20 32 32 30 Q44 32 44 40 Z" fill="#FF6347"/>
+          <circle cx="26" cy="38" r="1.5" fill="#FFD700"/>
+          <circle cx="32" cy="37" r="1.5" fill="#FFD700"/>
+          <circle cx="38" cy="38" r="1.5" fill="#FFD700"/>
+          <path d="M22 42 L24 44 L26 42 L28 44 L30 42 L32 44 L34 42 L36 44 L38 42 L40 44 L42 42" 
+                stroke="#F5F5DC" stroke-width="1.5" fill="none"/>
+        </svg>
+      </div>
+
+      <!-- Noodle Bowl Icon -->
+      <div class="floating-icon icon-5">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="32" cy="52" rx="20" ry="6" fill="#8B4513" opacity="0.2"/>
+          <path d="M14 32 Q14 28 18 28 L46 28 Q50 28 50 32 L50 44 Q50 50 44 52 L20 52 Q14 50 14 44 Z" fill="#DC143C"/>
+          <path d="M14 32 Q14 28 18 28 L46 28 Q50 28 50 32 L50 44 Q50 50 44 52 L20 52 Q14 50 14 44 Z" 
+                fill="#B22222" opacity="0.3"/>
+          <ellipse cx="32" cy="28" rx="14" ry="4" fill="#DC143C"/>
+          <path d="M20 22 Q22 18 24 22 Q26 18 28 22 Q30 18 32 22 Q34 18 36 22 Q38 18 40 22 Q42 18 44 22" 
+                stroke="#FFD700" stroke-width="2" fill="none"/>
+          <path d="M22 16 Q24 12 26 16 Q28 12 30 16 Q32 12 34 16 Q36 12 38 16 Q40 12 42 16" 
+                stroke="#FFD700" stroke-width="2" fill="none"/>
+          <circle cx="24" cy="34" r="2" fill="#FF6347"/>
+          <circle cx="32" cy="36" r="2" fill="#FF6347"/>
+          <circle cx="40" cy="34" r="2" fill="#FF6347"/>
+          <path d="M26 30 L28 32 L30 30 L32 32 L34 30 L36 32 L38 30" 
+                stroke="#90EE90" stroke-width="1.5" fill="none"/>
+        </svg>
+      </div>
+
+      <!-- Drink Cup Icon -->
+      <div class="floating-icon icon-6">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="32" cy="56" rx="12" ry="4" fill="#8B4513" opacity="0.2"/>
+          <path d="M22 18 L26 54 Q26 56 32 56 Q38 56 38 54 L42 18 Z" fill="#FF6347"/>
+          <path d="M22 18 L26 54 Q26 56 32 56 Q38 56 38 54 L42 18 Z" fill="#DC143C" opacity="0.3"/>
+          <ellipse cx="32" cy="18" rx="10" ry="3" fill="#DC143C"/>
+          <rect x="20" y="16" width="24" height="4" fill="#FF0000" rx="2"/>
+          <path d="M24 22 L36 22 L36 28 L24 28 Z" fill="#FFD700" opacity="0.6"/>
+          <rect x="28" y="8" width="8" height="12" fill="#FF6347" rx="2"/>
+          <rect x="28" y="8" width="8" height="4" fill="#DC143C" rx="2"/>
+          <circle cx="32" cy="36" r="2" fill="#FFF" opacity="0.3"/>
+          <circle cx="28" cy="42" r="1.5" fill="#FFF" opacity="0.3"/>
+          <circle cx="36" cy="40" r="1.5" fill="#FFF" opacity="0.3"/>
+          <path d="M30 24 Q32 26 34 24" stroke="#FFA500" stroke-width="1" fill="none"/>
+        </svg>
+      </div>
+
+      <!-- Cake Slice Icon -->
+      <div class="floating-icon icon-7">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="38" cy="52" rx="18" ry="5" fill="#8B4513" opacity="0.2"/>
+          <path d="M16 48 L20 52 L56 52 L52 48 Z" fill="#8B4513"/>
+          <path d="M18 44 L22 48 L54 48 L50 44 Z" fill="#FFB6C1"/>
+          <path d="M20 40 L24 44 L52 44 L48 40 Z" fill="#FFF"/>
+          <path d="M22 36 L26 40 L50 40 L46 36 Z" fill="#FFB6C1"/>
+          <path d="M24 32 L28 36 L48 36 L44 32 Z" fill="#FFF"/>
+          <path d="M26 28 L30 32 L46 32 L42 28 Z" fill="#FFB6C1"/>
+          <path d="M28 24 L32 28 L44 28 L40 24 Z" fill="#FFF"/>
+          <circle cx="34" cy="38" r="1.5" fill="#FF69B4"/>
+          <circle cx="38" cy="34" r="1.5" fill="#FF69B4"/>
+          <circle cx="42" cy="42" r="1.5" fill="#FF69B4"/>
+          <circle cx="30" cy="30" r="1.5" fill="#FF69B4"/>
+          <path d="M32 20 L34 24 L30 24 Z" fill="#FF0000"/>
+          <rect x="31" y="16" width="2" height="4" fill="#FFD700"/>
+          <circle cx="32" cy="16" r="2" fill="#FFD700"/>
+        </svg>
+      </div>
+
+      <!-- Salad Bowl Icon -->
+      <div class="floating-icon icon-8">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="32" cy="54" rx="22" ry="6" fill="#8B4513" opacity="0.2"/>
+          <path d="M12 34 Q12 30 16 30 L48 30 Q52 30 52 34 L52 44 Q52 50 46 52 L18 52 Q12 50 12 44 Z" fill="#90EE90"/>
+          <path d="M12 34 Q12 30 16 30 L48 30 Q52 30 52 34 L52 44 Q52 50 46 52 L18 52 Q12 50 12 44 Z" 
+                fill="#228B22" opacity="0.2"/>
+          <ellipse cx="32" cy="30" rx="16" ry="4" fill="#90EE90"/>
+          <circle cx="22" cy="26" r="4" fill="#228B22"/>
+          <circle cx="28" cy="24" r="3.5" fill="#32CD32"/>
+          <circle cx="36" cy="24" r="4" fill="#228B22"/>
+          <circle cx="42" cy="26" r="3.5" fill="#32CD32"/>
+          <circle cx="32" cy="22" r="3" fill="#228B22"/>
+          <circle cx="26" cy="32" r="2" fill="#FF6347"/>
+          <circle cx="34" cy="34" r="2" fill="#FF6347"/>
+          <circle cx="38" cy="32" r="2" fill="#FF6347"/>
+          <circle cx="30" cy="36" r="1.5" fill="#FFD700"/>
+          <circle cx="36" cy="38" r="1.5" fill="#FFD700"/>
+          <path d="M20 28 Q22 26 24 28" stroke="#228B22" stroke-width="1" fill="none"/>
+          <path d="M38 28 Q40 26 42 28" stroke="#228B22" stroke-width="1" fill="none"/>
+        </svg>
+      </div>
+    </div>
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-text">
+          <h1 class="hero-title animate-fade-in">
+            Order Food
+            <span class="gradient-text">Delivered to Your Bus Seat</span>
+          </h1>
+          <p class="hero-subtitle animate-fade-in-delay-1">
+            Travel hungry no more! Order from restaurants along your route and get fresh, hot meals delivered right to your seat.
+          </p>
+          <div class="hero-buttons animate-fade-in-delay-2">
+            <button class="btn btn-primary btn-lg" (click)="navigateToSearch()">
+              <i class="bi bi-search me-2"></i>
+              Find Your Bus
+            </button>
+            <button class="btn btn-outline-light btn-lg" (click)="scrollToSection('how-it-works')">
+              <i class="bi bi-play-circle me-2"></i>
+              How It Works
+            </button>
+          </div>
+          <div class="hero-stats animate-fade-in-delay-3">
+            <div class="stat-item" *ngFor="let stat of stats">
+              <div class="stat-value">{{ stat.value }}</div>
+              <div class="stat-label">{{ stat.label }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-image animate-float">
+          <div class="phone-mockup">
+            <div class="phone-screen">
+              <div class="app-preview">
+                <!-- Header with Back Button -->
+                <div class="detail-header">
+                  <button class="back-btn">
+                    <i class="bi bi-chevron-left"></i>
+                  </button>
+                </div>
+
+                <!-- Hero Image -->
+                <div class="hero-section1">
+                    <div class="burger-image">
+                        <img src="../../../assets/bg1.png" alt="Background Image">
+                    </div>
+                </div>
+
+                <!-- Product Details -->
+               <div class="product-details">
+    <h2>Chicken Biriyani</h2>
+    <p class="subtitle">Delicious Cuisine</p>
+
+    <div class="info-row">
+        <span class="cook-time">
+            <i class="bi bi-clock"></i> 30 min to Cook
+        </span>
+        <span class="rating-info">
+            ⭐ 4.8 (1.1k Reviews)
+        </span>
+    </div>
+
+    <div class="size-selection">
+        <div class="size-option">
+            <div class="size-img">🍚</div> <span class="size-label">Small</span>
+            <!-- <spanx class="size-price">99</span> -->
+        </div>
+        <div class="size-option active">
+            <div class="size-img">🍚</div> <span class="size-label">Medium</span>
+            <!-- <span class="size-price">99</span> -->
+        </div>
+        <div class="size-option">
+            <div class="size-img">🍚</div> <span class="size-label">Large</span>
+            <!-- <span class="size-price">99</span> -->
+        </div>
+    </div>
+
+    <p class="description">
+        Chicken Biriyani is a fragrant and flavorful rice dish cooked with tender pieces of marinated chicken, aromatic basmati rice, and a blend of exotic spices. It's often layered and slow-cooked to perfection, creating a rich and satisfying meal that's a staple in many cuisines.
+    </p>
+
+    <div class="order-section">
+        <div class="total-price">
+            <span>Total : Rs.99.00</span>
+        </div>
+        <div class="quantity-control">
+            <button class="qty-btn">−</button>
+            <span class="qty">01</span>
+            <button class="qty-btn">+</button>
+        </div>
+    </div>
+
+    <button class="order-now-btn">Order Now</button>
+</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features-section">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <h2 class="section-title">Why Choose RouteEat?</h2>
+        <p class="section-subtitle">Experience the future of travel dining</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card animate-on-scroll" *ngFor="let feature of features; let i = index" [style.animation-delay]="(i * 0.1) + 's'">
+          <div class="feature-icon">
+            <i class="bi" [class]="feature.icon"></i>
+          </div>
+          <h3 class="feature-title">{{ feature.title }}</h3>
+          <p class="feature-description">{{ feature.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section id="how-it-works" class="how-it-works-section">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-subtitle">Get your food in 3 simple steps</p>
+      </div>
+      <div class="steps-container">
+        <div class="step-card animate-on-scroll">
+          <div class="step-number">1</div>
+          <div class="step-icon">
+            <i class="bi bi-search"></i>
+          </div>
+          <h3 class="step-title">Search Your Route</h3>
+          <p class="step-description">Enter your bus number or route to see available restaurants along your journey</p>
+        </div>
+        <div class="step-arrow">
+          <i class="bi bi-arrow-right"></i>
+        </div>
+        <div class="step-card animate-on-scroll">
+          <div class="step-number">2</div>
+          <div class="step-icon">
+            <i class="bi bi-cart-fill"></i>
+          </div>
+          <h3 class="step-title">Order Your Meal</h3>
+          <p class="step-description">Browse menus, select your favorite dishes, and place your order with ease</p>
+        </div>
+        <div class="step-arrow">
+          <i class="bi bi-arrow-right"></i>
+        </div>
+        <div class="step-card animate-on-scroll">
+          <div class="step-number">3</div>
+          <div class="step-icon">
+            <i class="bi bi-box-seam"></i>
+          </div>
+          <h3 class="step-title">Receive at Your Seat</h3>
+          <p class="step-description">Get your fresh, hot meal delivered right to your bus seat at the designated stop</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section id="testimonials" class="testimonials-section">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <h2 class="section-title">What Our Customers Say</h2>
+        <p class="section-subtitle">Join thousands of happy travelers</p>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial-card animate-on-scroll" *ngFor="let testimonial of testimonials; let i = index" [style.animation-delay]="(i * 0.15) + 's'">
+          <div class="testimonial-rating">
+            <i class="bi bi-star-fill" *ngFor="let star of [1,2,3,4,5]"></i>
+          </div>
+          <p class="testimonial-text">"{{ testimonial.text }}"</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">{{ testimonial.image }}</div>
+            <div class="author-info">
+              <div class="author-name">{{ testimonial.name }}</div>
+              <div class="author-role">{{ testimonial.role }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Benefits Section -->
+  <section class="benefits-section">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <h2 class="section-title">Why Travelers Love Us</h2>
+        <p class="section-subtitle">Everything you need for a perfect journey</p>
+      </div>
+      <div class="benefits-content">
+        <div class="benefit-item animate-on-scroll">
+          <div class="benefit-icon">
+            <i class="bi bi-basket-fill"></i>
+          </div>
+          <h3>Wide Variety</h3>
+          <p>Choose from hundreds of restaurants and thousands of dishes</p>
+        </div>
+        <div class="benefit-item animate-on-scroll">
+          <div class="benefit-icon">
+            <i class="bi bi-lightning-charge-fill"></i>
+          </div>
+          <h3>Lightning Fast</h3>
+          <p>Orders prepared and delivered within your stop time</p>
+        </div>
+        <div class="benefit-item animate-on-scroll">
+          <div class="benefit-icon">
+            <i class="bi bi-shield-check"></i>
+          </div>
+          <h3>100% Safe</h3>
+          <p>Hygienic packaging and contactless delivery guaranteed</p>
+        </div>
+        <div class="benefit-item animate-on-scroll">
+          <div class="benefit-icon">
+            <i class="bi bi-tag-fill"></i>
+          </div>
+          <h3>Best Prices</h3>
+          <p>Exclusive deals and discounts for bus travelers</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Combined CTA Section -->
+  <section class="combined-cta-section">
+    <div class="container">
+      <div class="cta-grid">
+        <!-- Track Order Card -->
+        <div class="cta-card track-card animate-on-scroll">
+          <div class="card-icon">
+            <i class="bi bi-geo-alt-fill"></i>
+          </div>
+          <h3>Already Ordered?</h3>
+          <p>Track your order in real-time</p>
+          <button class="btn btn-outline" routerLink="/track-order">
+            <i class="bi bi-search me-2"></i>
+            Track Order
+          </button>
+        </div>
+
+        <!-- Get Started Card -->
+        <div class="cta-card start-card animate-on-scroll">
+          <div class="card-icon">
+            <i class="bi bi-rocket-takeoff"></i>
+          </div>
+          <h3>Ready to Order?</h3>
+          <p>Find your bus and order delicious food</p>
+          <button class="btn btn-primary" (click)="navigateToSearch()">
+            <i class="bi bi-search me-2"></i>
+            Find Your Bus
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <div class="brand-logo">
+            <img src="assets/logo_compact2.png" alt="BusFood" height="60px"/>
+            <span>RouteEat</span>
+          </div>
+          <p class="brand-tagline">Bringing delicious food to your journey</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-column">
+            <h4>Company</h4>
+            <a routerLink="/about">About Us</a>
+            <a routerLink="/careers">Careers</a>
+            <a routerLink="/partner">Become a Partner</a>
+            <a routerLink="/contact">Contact Us</a>
+          </div>
+          <div class="footer-column">
+            <h4>Support</h4>
+            <a routerLink="/help">Help Center</a>
+            <a routerLink="/faq">FAQs</a>
+            <a routerLink="/track-order">Track Order</a>
+            <a routerLink="/refund">Refund Policy</a>
+          </div>
+          <div class="footer-column">
+            <h4>Legal</h4>
+            <a routerLink="/privacy">Privacy Policy</a>
+            <a routerLink="/terms">Terms of Service</a>
+            <a routerLink="/cookies">Cookie Policy</a>
+            <a routerLink="/cancellation">Cancellation Policy</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 RouteEat. All rights reserved.</p>
+        <div class="social-links">
+          <a href="#"><i class="bi bi-facebook"></i></a>
+          <a href="#"><i class="bi bi-twitter"></i></a>
+          <a href="#"><i class="bi bi-instagram"></i></a>
+          <a href="#"><i class="bi bi-linkedin"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

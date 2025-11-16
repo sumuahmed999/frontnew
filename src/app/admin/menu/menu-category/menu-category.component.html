@@ -1,0 +1,234 @@
+<div class="menu-category-container">
+  <!-- Success/Error Messages -->
+  <div *ngIf="successMessage" class="alert alert-success alert-compact mb-2">
+    <i class="bi bi-check-circle me-1"></i>
+    <span class="small">{{ successMessage }}</span>
+    <button type="button" class="btn-close btn-close-sm" (click)="clearMessages()"></button>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger alert-compact mb-2">
+    <i class="bi bi-exclamation-circle me-1"></i>
+    <span class="small">{{ errorMessage }}</span>
+    <button type="button" class="btn-close btn-close-sm" (click)="clearMessages()"></button>
+  </div>
+
+  <!-- Category Form -->
+  <div class="category-form card">
+    <div class="card-header py-2">
+      <h6 class="card-title mb-0 small">
+        <i class="bi bi-tags me-1"></i>
+        {{ editingCategoryId ? 'Edit Category' : 'Add New Category' }}
+      </h6>
+    </div>
+    <div class="card-body py-2">
+      <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()">
+        <div class="form-grid mb-3">
+          <!-- Category Name -->
+          <div class="form-group">
+            <label class="form-label text-xs">Category Name *</label>
+            <input type="text" formControlName="categoryName" 
+                   class="form-control form-control-sm text-xs" 
+                   [disabled]="isSubmitting"
+                   placeholder="Enter category name">
+            <div *ngIf="categoryForm.get('categoryName')?.invalid && categoryForm.get('categoryName')?.touched" 
+                 class="text-danger text-xs mt-1">
+              Category name is required
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label class="form-label text-xs">Description</label>
+            <textarea formControlName="description" 
+                      class="form-control form-control-sm text-xs" 
+                      [disabled]="isSubmitting"
+                      placeholder="Category description"
+                      rows="2"></textarea>
+          </div>
+
+          <!-- Display Order -->
+          <div class="form-group">
+            <label class="form-label text-xs">Display Order</label>
+            <input type="number" formControlName="displayOrder" 
+                   class="form-control form-control-sm text-xs" 
+                   [disabled]="isSubmitting"
+                   min="0">
+          </div>
+
+          <!-- Active Status -->
+          <div class="form-group">
+            <div class="form-check mt-3">
+              <input type="checkbox" formControlName="isActive" 
+                     class="form-check-input form-check-input-sm" 
+                     [disabled]="isSubmitting">
+              <label class="form-check-label text-xs">Active Category</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions mt-3 pt-2 border-top">
+          <button type="submit" class="btn btn-primary btn-sm" 
+                  [disabled]="categoryForm.invalid || isSubmitting">
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-1"></span>
+            <span *ngIf="isSubmitting" class="text-xs">
+              {{ editingCategoryId ? 'Updating...' : 'Saving...' }}
+            </span>
+            <span *ngIf="!isSubmitting" class="text-xs">
+              <i class="bi bi-save me-1"></i>{{ editingCategoryId ? 'Update' : 'Save' }} Category
+            </span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm ms-2" 
+                  (click)="resetForm()" [disabled]="isSubmitting">
+            <i class="bi bi-x-circle me-1"></i><span class="text-xs">Reset</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Categories List -->
+  <div class="categories-list card mt-3">
+    <div class="card-header py-2">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <h6 class="card-title mb-0 small">
+          <i class="bi bi-list me-1"></i>
+          Categories <span class="badge badge-sm bg-primary">{{ totalCount }}</span>
+        </h6>
+        
+        <!-- Search and Filter Controls -->
+        <div class="d-flex gap-2 flex-wrap">
+          <div class="input-group input-group-sm" style="width: 200px;">
+            <input type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" 
+                   class="form-control text-xs" placeholder="Search categories...">
+            <button type="button" class="btn btn-outline-primary btn-sm px-2" (click)="onSearch()">
+              <i class="bi bi-search"></i>
+            </button>
+          </div>
+          
+          <select [(ngModel)]="filterActive" (change)="onSearch()" 
+                  class="form-select form-select-sm text-xs" style="width: auto;">
+            <option [ngValue]="undefined">All Status</option>
+            <option [ngValue]="true">Active</option>
+            <option [ngValue]="false">Inactive</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="text-center py-3">
+        <div class="spinner-border spinner-border-sm text-primary"></div>
+        <div class="mt-1 small">Loading categories...</div>
+      </div>
+
+      <!-- Categories Table -->
+      <div *ngIf="!isLoading" class="table-responsive">
+        <table class="table table-hover table-sm table-compact mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="py-2 text-xs">Category Name</th>
+              <th class="py-2 text-xs">Description</th>
+              <th class="py-2 text-xs">Order</th>
+              <th class="py-2 text-xs">Subcategories</th>
+              <th class="py-2 text-xs">Items</th>
+              <th class="py-2 text-xs">Status</th>
+              <th class="py-2 text-xs">Created</th>
+              <th class="py-2 text-xs" width="120">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let category of categories; trackBy: trackByCategoryId" 
+                [class.table-warning]="!category.isActive">
+              <td class="py-2">
+                <strong class="text-xs">{{ category.categoryName }}</strong>
+              </td>
+              <td class="py-2">
+                <span class="text-xs">{{ category.description || '-' }}</span>
+              </td>
+              <td class="py-2">
+                <span class="text-xs">{{ category.displayOrder }}</span>
+              </td>
+              <td class="py-2">
+                <span class="badge badge-sm bg-info">{{ category.subcategoryCount }}</span>
+              </td>
+              <td class="py-2">
+                <span class="badge badge-sm bg-secondary">{{ category.itemCount }}</span>
+              </td>
+              <td class="py-2">
+                <span class="badge badge-sm" [ngClass]="category.isActive ? 'bg-success' : 'bg-danger'">
+                  <i [class]="category.isActive ? 'bi bi-check' : 'bi bi-x'"></i>
+                  {{ category.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td class="py-2">
+                <small class="text-xs">{{ category.createdDate | date:'short' }}</small>
+              </td>
+              <td class="py-2">
+                <div class="btn-group btn-group-sm">
+                  <button type="button" class="btn btn-outline-primary btn-xs px-1" 
+                          (click)="editCategory(category)" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button type="button" class="btn btn-outline-danger btn-xs px-1" 
+                          (click)="deleteCategory(category)" title="Delete"
+                          [disabled]="category.itemCount > 0 || category.subcategoryCount > 0">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            
+            <!-- Empty State -->
+            <tr *ngIf="categories.length === 0">
+              <td colspan="8" class="text-center py-4 text-muted">
+                <i class="bi bi-tags display-4 mb-2 d-block"></i>
+                <div class="small">No categories found</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <nav *ngIf="totalPages > 1" class="mt-2 px-3 pb-2">
+        <ul class="pagination pagination-sm justify-content-center mb-0">
+          <li class="page-item" [class.disabled]="currentPage <= 1">
+            <button class="page-link px-2 py-1 text-xs" (click)="onPageChange(1)" 
+                    [disabled]="currentPage <= 1">
+              <i class="bi bi-chevron-double-left"></i>
+            </button>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage <= 1">
+            <button class="page-link px-2 py-1 text-xs" 
+                    (click)="onPageChange(currentPage - 1)" 
+                    [disabled]="currentPage <= 1">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+          </li>
+          
+          <li *ngFor="let page of getPaginationNumbers()" 
+              class="page-item" [class.active]="page === currentPage">
+            <button class="page-link px-2 py-1 text-xs" (click)="onPageChange(page)">{{ page }}</button>
+          </li>
+          
+          <li class="page-item" [class.disabled]="currentPage >= totalPages">
+            <button class="page-link px-2 py-1 text-xs" 
+                    (click)="onPageChange(currentPage + 1)" 
+                    [disabled]="currentPage >= totalPages">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage >= totalPages">
+            <button class="page-link px-2 py-1 text-xs" 
+                    (click)="onPageChange(totalPages)" 
+                    [disabled]="currentPage >= totalPages">
+              <i class="bi bi-chevron-double-right"></i>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>

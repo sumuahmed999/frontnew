@@ -1,0 +1,254 @@
+// location-management.component.scss
+.location-management {
+  padding: 1rem;
+}
+
+// Form Styles
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.form-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-col-full {
+  flex: 1 1 100%;
+}
+
+.form-label-compact {
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+  display: block;
+  color: #495057;
+}
+
+.form-control-compact {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8rem;
+  height: 32px;
+  line-height: 1.2;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+
+  &:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.form-check-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.form-check-input {
+  width: 1rem;
+  height: 1rem;
+}
+
+.form-check-label-compact {
+  font-size: 0.8rem;
+  margin: 0;
+  color: #495057;
+}
+
+.error-space {
+  height: 16px;
+  margin-top: 0.2rem;
+}
+
+.error-text-compact {
+  font-size: 0.7rem;
+  color: #dc3545;
+  line-height: 1.2;
+  height: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.error-spacer {
+  height: 16px;
+}
+
+.btn-compact {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  height: 32px;
+  line-height: 1.2;
+}
+
+.btn-xs {
+  padding: 0.2rem 0.4rem;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.form-actions {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+// Card Styles
+.card {
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 0.75rem 1rem;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+// Search Styles
+.search-container {
+  position: relative;
+  display: flex;
+  
+  input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    width: 200px;
+  }
+  
+  button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: 0;
+  }
+}
+
+// Table Styles
+.table-compact {
+  font-size: 0.85rem;
+  
+  th, td {
+    padding: 0.5rem;
+    vertical-align: middle;
+  }
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  
+  &:hover {
+    background-color: #e9ecef;
+  }
+  
+  i {
+    margin-left: 0.25rem;
+    opacity: 0.5;
+  }
+}
+
+.table-warning {
+  background-color: rgba(255, 193, 7, 0.1) !important;
+}
+
+// Alert Styles
+.alert-compact {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  border-radius: 0.25rem;
+  position: relative;
+}
+
+.btn-close-sm {
+  padding: 0.2rem;
+  font-size: 0.7rem;
+}
+
+// Badge Styles
+.badge {
+  font-size: 0.7rem;
+}
+
+// Pagination Styles
+.pagination-sm {
+  .page-link {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+// Responsive Design
+@media (max-width: 992px) {
+  .form-row {
+    flex-wrap: wrap;
+    
+    .form-col {
+      flex-basis: calc(50% - 0.5rem);
+    }
+  }
+  
+  .search-container input {
+    width: 150px;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+    gap: 0.5rem;
+    
+    .form-col {
+      flex-basis: 100%;
+    }
+  }
+  
+  .card-header .d-flex {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch !important;
+  }
+  
+  .search-container {
+    width: 100%;
+    
+    input {
+      flex: 1;
+    }
+  }
+  
+  .table-responsive {
+    font-size: 0.75rem;
+  }
+}
+
+// Loading States
+.spinner-border-sm {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+// Utility Classes
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

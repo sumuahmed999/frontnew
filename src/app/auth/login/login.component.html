@@ -1,0 +1,145 @@
+<div class="login-container">
+  <div class="container-fluid h-100">
+    <div class="row h-100 align-items-center justify-content-center">
+      <div class="col-11 col-sm-8 col-md-6 col-lg-4 col-xl-3">
+        <div class="login-card">
+          <div class="login-header">
+            <div class="logo-container">
+           <img src="assets/logo_compact2.png" alt="RouteEat Logo" class="logo" />
+            </div>
+            <span class="login-subtitle">Sign in to your account</span>
+          </div>
+
+          <!-- Login Form -->
+          <form (ngSubmit)="onSubmit()" #loginForm="ngForm" novalidate class="login-form">
+            
+            <!-- Tenant Dropdown -->
+            <div class="form-group">
+              <label class="form-label">Tenant</label>
+              <div class="custom-dropdown" 
+                   [class.is-open]="isDropdownOpen" 
+                   [class.is-invalid]="tenantSelect.invalid && (tenantSelect.dirty || tenantSelect.touched)">
+                
+                <div class="dropdown-input-container" (click)="toggleDropdown()">
+                  <input
+                    type="text"
+                    name="searchTerm"
+                    class="form-control dropdown-input"
+                    [(ngModel)]="searchTerm"
+                    (input)="onSearch($event)"
+                    (keydown)="onKeydown($event)"
+                    [placeholder]="selectedTenant ? selectedTenant.name : 'Select or search tenant'"
+                    [readonly]="!isDropdownOpen"
+                    autocomplete="off"
+                  />
+                  <span class="dropdown-arrow" [class.rotated]="isDropdownOpen">▼</span>
+                </div>
+                
+                <!-- Dropdown Menu -->
+                <div class="dropdown-menu" [class.show]="isDropdownOpen">
+                  <div *ngIf="loadingTenants" class="dropdown-loading">
+                    <div class="loading-spinner"></div>
+                    <span>Loading...</span>
+                  </div>
+                  
+                  <div *ngIf="!loadingTenants && filteredTenants.length === 0" class="dropdown-empty">
+                    <span>No tenants found</span>
+                  </div>
+                  
+                  <div
+                    *ngFor="let tenant of filteredTenants; let i = index"
+                    class="dropdown-item"
+                    [class.highlighted]="highlightedIndex === i"
+                    (click)="selectTenant(tenant)"
+                    (mouseenter)="highlightedIndex = i"
+                  >
+                    <div class="tenant-info">
+                      <span class="tenant-name">{{ tenant.name }}</span>
+                      <span class="tenant-id">ID: {{ tenant.code }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Hidden input for validation -->
+              <input type="hidden" name="tenantId" [(ngModel)]="model.tenantCode" required #tenantSelect="ngModel" />
+              
+              <div *ngIf="tenantSelect.invalid && (tenantSelect.dirty || tenantSelect.touched)" class="error-message">
+                Tenant selection is required
+              </div>
+            </div>
+
+            <!-- Username Input -->
+            <div class="form-group">
+              <label class="form-label">Username</label>
+              <input
+                type="text"
+                name="username"
+                class="form-control"
+                [(ngModel)]="model.username"
+                required
+                autocomplete="username"
+                placeholder="Enter your username"
+                #username="ngModel"
+              />
+              <div *ngIf="username.invalid && (username.dirty || username.touched)" class="error-message">
+                Username is required
+              </div>
+            </div>
+
+            <!-- Password Input -->
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <div class="password-container">
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  name="password"
+                  class="form-control"
+                  [(ngModel)]="model.password"
+                  required
+                  autocomplete="current-password"
+                  placeholder="Enter your password"
+                  #password="ngModel"
+                />
+                <button type="button" class="password-toggle" (click)="togglePassword()">
+                  {{ showPassword ? '🙈' : '👁' }}
+                </button>
+              </div>
+              <div *ngIf="password.invalid && (password.dirty || password.touched)" class="error-message">
+                Password is required
+              </div>
+            </div>
+
+            <!-- Remember Me & Forgot Password -->
+            <div class="form-options">
+              <label class="checkbox-container">
+                <input type="checkbox" name="rememberMe" [(ngModel)]="rememberMe">
+                <span class="checkmark"></span>
+                <span class="checkbox-text">Remember me</span>
+              </label>
+              <a href="#" class="forgot-link">Forgot password?</a>
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              class="btn-login"
+              [disabled]="!loginForm.form.valid || isLoading"
+            >
+              <span *ngIf="!isLoading">Sign In</span>
+              <span *ngIf="isLoading" class="btn-loading">
+                <div class="login-spinner"></div>
+                Signing in...
+              </span>
+            </button>
+          </form>
+
+          <!-- Error Alert -->
+          <div *ngIf="errorMessage" class="error-alert">
+            {{ errorMessage }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

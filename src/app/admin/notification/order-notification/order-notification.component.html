@@ -1,0 +1,128 @@
+<!-- order-notification.component.html -->
+<div class="notification-overlay" *ngIf="showNotification && currentOrder">
+  <div class="notification-modal">
+    <div class="notification-header">
+      <div class="header-icon">
+        <i class="bi bi-bell-fill"></i>
+      </div>
+      <div class="header-text">
+        <h2>🍔 New Order Received!</h2>
+        <p>Order #{{ currentOrder.orderId }}</p>
+      </div>
+      <button class="close-btn" (click)="closeNotification()" *ngIf="!isProcessing">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-banner" *ngIf="errorMessage">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <!-- Processing Indicator -->
+    <div class="processing-banner" *ngIf="isProcessing">
+      <div class="spinner-border spinner-border-sm" role="status">
+        <span class="visually-hidden">Processing...</span>
+      </div>
+      <span>Processing your request...</span>
+    </div>
+
+    <div class="notification-body">
+      <!-- Customer Info -->
+      <div class="section">
+        <h3><i class="bi bi-person"></i> Customer Details</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Name:</span>
+            <span class="value">{{ currentOrder.passengerName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Phone:</span>
+            <span class="value">{{ currentOrder.passengerPhone }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Journey Info -->
+      <div class="section">
+        <h3><i class="bi bi-bus-front"></i> Journey Details</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Bus:</span>
+            <span class="value">{{ currentOrder.busName }} ({{ currentOrder.busNumber }})</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Route:</span>
+            <span class="value">{{ currentOrder.startLocation }} → {{ currentOrder.endLocation }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Departure:</span>
+            <span class="value">{{ currentOrder.departureDate }} at {{ currentOrder.departureTime }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Items -->
+      <div class="section">
+        <h3><i class="bi bi-bag"></i> Order Items</h3>
+        <div class="order-items">
+          <div class="order-item" *ngFor="let item of currentOrder.items">
+            <div class="item-info">
+              <span class="item-name">{{ item.itemName }}</span>
+              <span class="item-qty">×{{ item.quantity }}</span>
+            </div>
+            <span class="item-price">₹{{ formatCurrency(item.price * item.quantity) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Remarks -->
+      <div class="section" *ngIf="currentOrder.additionalRemarks">
+        <h3><i class="bi bi-chat-text"></i> Special Instructions</h3>
+        <p class="remarks">{{ currentOrder.additionalRemarks }}</p>
+      </div>
+
+      <!-- Amount Breakdown -->
+      <div class="section amount-section">
+        <div class="amount-row">
+          <span>Subtotal:</span>
+          <span>₹{{ formatCurrency(currentOrder.subtotal) }}</span>
+        </div>
+        <div class="amount-row" *ngIf="currentOrder.taxAmount > 0">
+          <span>Tax (CGST + SGST):</span>
+          <span>₹{{ formatCurrency(currentOrder.taxAmount) }}</span>
+        </div>
+        <div class="amount-row" *ngIf="currentOrder.deliveryFee > 0">
+          <span>Delivery Fee:</span>
+          <span>₹{{ formatCurrency(currentOrder.deliveryFee) }}</span>
+        </div>
+        <div class="amount-row total">
+          <span>Total Amount:</span>
+          <span>₹{{ formatCurrency(currentOrder.totalAmount) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="notification-footer">
+      <button 
+        class="reject-btn" 
+        (click)="rejectOrder()"
+        [disabled]="isProcessing"
+        title="Reject this order with a reason">
+        <i class="bi bi-x-circle"></i>
+        <span *ngIf="!isProcessing">Reject Order</span>
+        <span *ngIf="isProcessing">Processing...</span>
+      </button>
+      <button 
+        class="accept-btn" 
+        (click)="acceptOrder()"
+        [disabled]="isProcessing"
+        title="Accept and confirm this order">
+        <i class="bi bi-check-circle"></i>
+        <span *ngIf="!isProcessing">Accept Order</span>
+        <span *ngIf="isProcessing">Processing...</span>
+      </button>
+    </div>
+  </div>
+</div>

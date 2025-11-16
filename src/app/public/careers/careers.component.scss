@@ -1,0 +1,264 @@
+.careers-page {
+  min-height: 100vh;
+}
+
+.page-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  padding: 15px 0;
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    cursor: pointer;
+
+    i {
+      font-size: 28px;
+      color: #ff6b6b;
+    }
+  }
+
+  .close-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+
+    i {
+      font-size: 20px;
+      color: #333;
+    }
+
+    &:hover {
+      background: #667eea;
+
+      i {
+        color: white;
+      }
+    }
+  }
+}
+
+.page-header {
+  margin-top: 70px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 60px 0;
+  text-align: center;
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .breadcrumb {
+    font-size: 14px;
+    margin-bottom: 20px;
+    opacity: 0.9;
+
+    a {
+      color: white;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  h1 {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 15px;
+  }
+
+  p {
+    font-size: 18px;
+    opacity: 0.9;
+  }
+}
+
+.why-join-section {
+  padding: 100px 0;
+  background: white;
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  h2 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #333;
+    text-align: center;
+    margin-bottom: 60px;
+  }
+
+  .benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+
+    .benefit-card {
+      text-align: center;
+      padding: 40px 20px;
+      background: #f9f9f9;
+      border-radius: 15px;
+      transition: all 0.3s;
+
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      i {
+        font-size: 48px;
+        color: #667eea;
+        margin-bottom: 20px;
+      }
+
+      h3 {
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+      }
+
+      p {
+        font-size: 14px;
+        color: #666;
+        margin: 0;
+      }
+    }
+  }
+}
+
+.openings-section {
+  padding: 100px 0;
+  background: #f8f9fa;
+
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  h2 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #333;
+    text-align: center;
+    margin-bottom: 60px;
+  }
+
+  .openings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .opening-card {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+
+      .opening-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 15px;
+
+        h3 {
+          font-size: 22px;
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 10px;
+        }
+
+        .opening-meta {
+          display: flex;
+          gap: 20px;
+          font-size: 14px;
+          color: #666;
+
+          span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+          }
+        }
+
+        .btn {
+          padding: 10px 25px;
+          font-size: 14px;
+          font-weight: 600;
+          border-radius: 25px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: none;
+          cursor: pointer;
+          transition: all 0.3s;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+          }
+        }
+      }
+
+      p {
+        font-size: 15px;
+        color: #666;
+        line-height: 1.6;
+        margin: 0;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .page-header h1 {
+    font-size: 32px;
+  }
+
+  .why-join-section .benefits-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .openings-section .opening-card .opening-header {
+    flex-direction: column;
+    gap: 15px;
+
+    .opening-meta {
+      flex-direction: column;
+      gap: 5px;
+    }
+  }
+}
